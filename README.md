@@ -47,17 +47,22 @@ Abre la URL mostrada por Vite (normalmente `http://localhost:5173`).
 ---
 
 ## Deploy fácil en Netlify
-Este repositorio ya incluye `netlify.toml` con:
-- `base = "client"`
-- `command = "npm run build"`
-- `publish = "dist"`
-- Redirect SPA a `/index.html`
+Este repositorio ya incluye `netlify.toml` con configuración **desde la raíz del repo**:
+- `command = "npm --prefix client install && npm --prefix client run build"`
+- `publish = "client/dist"`
+- Redirect SPA a `/index.html` (también respaldado con `client/public/_redirects`)
+
+> Sí, `index.html` debe estar en la raíz **del directorio publicado**.
+> En esta configuración, el directorio publicado es `client/dist`, por lo que Netlify sirve `client/dist/index.html` as `/index.html` del sitio.
 
 ### Pasos
 1. En Netlify, selecciona **Add new project → Import an existing project**.
 2. Conecta el repo.
-3. Verifica que use la configuración de `netlify.toml`.
+3. Verifica que en *Site settings → Build & deploy* quede:
+   - **Build command**: `npm --prefix client install && npm --prefix client run build`
+   - **Publish directory**: `client/dist`
 4. Si usas backend externo, define `VITE_SOCKET_URL` en variables de entorno del sitio.
+5. Si estabas abriendo la URL de **GitHub Pages** y solo ves Markdown/README, abre la URL de **Netlify** (ej. `https://tu-sitio.netlify.app`).
 
 > Nota: Netlify hospeda el frontend estático. El backend de `server/` debe correr aparte (Render, Railway, VPS, etc.).
 
