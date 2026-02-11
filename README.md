@@ -22,14 +22,17 @@ Since this is a modern web application, you need to install **Node.js**:
     cd server
     npm install
     ```
-2.  Start the server:
+2.  **Start Production**:
     ```powershell
-    node index.js
+    npm start
     ```
-    *If you don't have the hardware yet, you can run the simulator instead:*
+    *Or run the **Simulator Mode** (No Hardware Needed):*
     ```powershell
-    node simulator.js
+    npm run simulate
     ```
+    *To fallback to simulator if serial fails:*
+    - Rename `.env.example` to `.env`.
+    - Set `ALLOW_SIM_FALLBACK=true`.
 
 ### 3. Frontend Setup (Client)
 1.  Open a new terminal in the `client` folder:

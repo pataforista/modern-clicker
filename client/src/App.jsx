@@ -6,15 +6,17 @@ import { QuizProvider, useQuiz } from './context/QuizContext';
 import QuizManager from './components/QuizManager';
 import PresentationView from './components/PresentationView';
 
-// Connect to the backend
-const socket = io('http://localhost:3001');
+// Connect to the backend using Env Var or Default
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+const socket = io(SOCKET_URL);
 
 // Main Content Wrapper to use Context
 function Dashboard() {
     const [connected, setConnected] = useState(false);
-    const [hardwareStatus, setHardwareStatus] = useState('Disconnected');
+    const [sessionStatus, setSessionStatus] = useState({ status: 'STOPPED', votes: 0 });
+    const [serverNote, setServerNote] = useState('Connecting...');
+
     const [votes, setVotes] = useState({});
-    const [isPolling, setIsPolling] = useState(false);
     const [recentLog, setRecentLog] = useState([]);
 
     const { presentationMode, setPresentationMode, currentQuestion } = useQuiz();
@@ -22,26 +24,36 @@ function Dashboard() {
     useEffect(() => {
         socket.on('connect', () => {
             setConnected(true);
+            setServerNote('Connected');
         });
 
         socket.on('disconnect', () => {
             setConnected(false);
-            setHardwareStatus('Server Disconnected');
+            setServerNote('Disconnected');
         });
 
         socket.on('status', (data) => {
-            setHardwareStatus(data.message);
+            // Data: { mode, connected, session: { status, votes }, note }
+            if (data.note) setServerNote(data.note);
+            if (data.session) setSessionStatus(data.session);
         });
 
         socket.on('vote', (data) => {
-            if (!isPolling) return;
-
+            // Data: { id, key, ts, source, isUpdate }
             setVotes(prev => ({
                 ...prev,
-                [data.id]: data.response
+                [data.id]: data.key // Contract uses 'key', not 'response'
             }));
 
-            setRecentLog(prev => [`[${new Date(data.timestamp).toLocaleTimeString()}] ${data.id} voted ${data.response}`, ...prev].slice(0, 10));
+            // Only log if it's new, or maybe log updates too?
+            const time = new Date(data.ts).toLocaleTimeString();
+            setRecentLog(prev => [`[${time}] ${data.id} -> ${data.key}`, ...prev].slice(0, 15));
+        });
+
+        socket.on('snapshot', (allVotes) => {
+            const newVotes = {};
+            allVotes.forEach(v => { newVotes[v.id] = v.key; });
+            setVotes(newVotes);
         });
 
         return () => {
@@ -49,8 +61,23 @@ function Dashboard() {
             socket.off('disconnect');
             socket.off('status');
             socket.off('vote');
+            socket.off('snapshot');
         };
-    }, [isPolling]);
+    }, []);
+
+    // Control Functions
+    const startSession = () => socket.emit('session/start'); // Need backend support or just POST
+    // Actually the plan said POST /session/start, but let's see if we can use fetch or socket?
+    // The Backend index.js has APP.POST endpoints.
+    // We should use fetch.
+
+    const sendCommand = async (endpoint) => {
+        try {
+            await fetch(`${SOCKET_URL}/session/${endpoint}`, { method: 'POST' });
+        } catch (e) {
+            console.error("Command failed", e);
+        }
+    };
 
     const data = ['A', 'B', 'C', 'D', 'E'].map(option => ({
         name: option,
@@ -59,12 +86,7 @@ function Dashboard() {
 
     const totalVotes = Object.keys(votes).length;
 
-    const handleReset = () => {
-        setVotes({});
-        setRecentLog([]);
-    };
-
-    // If in Presentation Mode, show the Overlay
+    // Presentation Mode
     if (presentationMode) {
         return (
             <PresentationView>
@@ -81,7 +103,7 @@ function Dashboard() {
                         </BarChart>
                     </ResponsiveContainer>
                     <div style={{ textAlign: 'center', color: 'white', marginTop: '1rem' }}>
-                        <h2>{totalVotes} Votes Received</h2>
+                        <h2>{totalVotes} Votes</h2>
                     </div>
                 </div>
             </PresentationView>
@@ -101,13 +123,13 @@ function Dashboard() {
                     </button>
                     <div className={`status-badge ${connected ? 'online' : 'offline'}`}>
                         {connected ? <Wifi size={16} /> : <WifiOff size={16} />}
-                        <span>{hardwareStatus}</span>
+                        <span>{serverNote}</span>
                     </div>
                 </div>
             </header>
 
             <main className="dashboard-grid">
-                {/* Main Chart Area */}
+                {/* Chart Section */}
                 <section className="card chart-card">
                     <div className="card-header">
                         <h2>Live Results</h2>
@@ -137,25 +159,24 @@ function Dashboard() {
                     <section className="card controls-card">
                         <h2>Session Control</h2>
                         <div className="button-group">
-                            {!isPolling ? (
-                                <button className="btn btn-primary" onClick={() => setIsPolling(true)}>
-                                    <Play size={18} /> Start Polling
+                            {sessionStatus.status !== 'RUNNING' ? (
+                                <button className="btn btn-primary" onClick={() => sendCommand('start')}>
+                                    <Play size={18} /> Start Session
                                 </button>
                             ) : (
-                                <button className="btn btn-danger" onClick={() => setIsPolling(false)}>
-                                    <Square size={18} /> Stop Polling
+                                <button className="btn btn-danger" onClick={() => sendCommand('pause')}>
+                                    <Square size={18} /> Pause Session
                                 </button>
                             )}
-                            <button className="btn btn-secondary" onClick={handleReset}>
-                                <RotateCcw size={18} /> Reset Votes
+                            <button className="btn btn-secondary" onClick={() => sendCommand('reset')}>
+                                <RotateCcw size={18} /> Reset
                             </button>
                         </div>
                         <div className="polling-indicator">
-                            Status: <span className={isPolling ? 'text-green' : 'text-gray'}>{isPolling ? 'LISTENING' : 'PAUSED'}</span>
+                            State: <span className={sessionStatus.status === 'RUNNING' ? 'text-green' : 'text-gray'}>{sessionStatus.status}</span>
                         </div>
                     </section>
 
-                    {/* New Quiz Manager */}
                     <QuizManager />
 
                     <section className="card log-card">

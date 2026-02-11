@@ -1,75 +1,259 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const { SerialPort } = require('serialport');
-const { ReadlineParser } = require('@serialport/parser-readline');
-const cors = require('cors');
+import "dotenv/config";
+import express from "express";
+import http from "http";
+import cors from "cors";
+import { Server as SocketIOServer } from "socket.io";
+import { z } from "zod";
+import { SerialPort } from "serialport";
+import { ReadlineParser } from "@serialport/parser-readline";
+import { startSimulator } from "./simulator.js";
+
+const env = {
+    PORT: Number(process.env.PORT ?? 3001),
+    CLIENT_ORIGIN: process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
+    SERIAL_PATH: process.env.SERIAL_PATH ?? "COM3",
+    SERIAL_BAUD: Number(process.env.SERIAL_BAUD ?? 115200),
+    SIMULATOR: (process.env.SIMULATOR ?? "false").toLowerCase() === "true",
+    ALLOW_SIM_FALLBACK: (process.env.ALLOW_SIM_FALLBACK ?? "false").toLowerCase() === "true"
+};
+
+// Zod Schema for incoming Serial Data
+// Expected: {"id": "...", "key": "..."}
+const VoteSchema = z.object({
+    id: z.union([z.string(), z.number()]).transform(v => String(v).trim()),
+    key: z.string().transform(v => String(v).trim().toUpperCase())
+}).transform(v => ({
+    id: v.id,
+    key: v.key,
+    ts: Date.now(),
+    source: "serial"
+})).refine(v => /^[A-E]$/.test(v.key), { message: "key must be A-E" })
+    .refine(v => v.id.length > 0 && v.id.length <= 32, { message: "id invalid length" });
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: false }));
+app.use(express.json());
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
+const io = new SocketIOServer(server, {
+    cors: { origin: env.CLIENT_ORIGIN }
+});
 
-const PORT = 3001;
-const SERIAL_PATH = 'COM3'; // Update this to your correct port
-const BAUD_RATE = 115200;
+// State
+let serialState = { mode: env.SIMULATOR ? "simulator" : "serial", connected: false, lastError: null };
+let stopSim = null;
 
-let port;
+// Session State (Source of Truth)
+let sessionState = {
+    status: "STOPPED", // RUNNING | PAUSED | STOPPED
+    votesById: new Map(), // id -> key
+    lastVoteTs: null
+};
 
-function connectSerial() {
-    try {
-        port = new SerialPort({ path: SERIAL_PATH, baudRate: BAUD_RATE });
-        const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
+// --- Helpers ---
 
-        port.on('open', () => {
-            console.log('Serial Port Connected');
-            io.emit('status', { connected: true, message: 'Hardware Online' });
-        });
-
-        port.on('error', (err) => {
-            console.log('Serial Error (Connect hardware!):', err.message);
-        });
-
-        parser.on('data', (data) => {
-            try {
-                const cleanData = data.trim();
-                console.log('RX:', cleanData); // Log raw for debugging
-
-                // Parse JSON from Arduino: {"id": "ABC1234", "key": "A", "raw_vote": "0x31"}
-                const packet = JSON.parse(cleanData);
-
-                if (packet && packet.id && packet.key) {
-                    // If valid vote (key is not '?')
-                    if (packet.key !== '?') {
-                        io.emit('vote', {
-                            id: packet.id,
-                            response: packet.key,
-                            timestamp: Date.now()
-                        });
-                    } else {
-                        // It's a debug packet or unknown key
-                        console.log('Unknown Key/Packet:', packet);
-                    }
-                }
-            } catch (e) {
-                // Not JSON? Maybe init message or interfering connection
-                console.log('Non-JSON Data:', data);
-            }
-        });
-
-    } catch (err) {
-        console.log('Running in Simulator Mode');
-    }
+function emitStatus(extra = {}) {
+    // Convert Map to size for transmission
+    const payload = {
+        ...serialState,
+        session: {
+            status: sessionState.status,
+            votes: sessionState.votesById.size,
+            lastVoteTs: sessionState.lastVoteTs
+        },
+        ...extra
+    };
+    io.emit("status", payload);
 }
 
-connectSerial();
+function acceptVote(vote) {
+    if (sessionState.status !== "RUNNING") return;
 
-io.on('connection', (socket) => {
-    console.log('Client connected');
-    socket.on('simulate_vote', (data) => io.emit('vote', data));
+    const prev = sessionState.votesById.get(vote.id);
+    sessionState.votesById.set(vote.id, vote.key);
+    sessionState.lastVoteTs = vote.ts;
+
+    io.emit("vote", {
+        ...vote,
+        isUpdate: prev != null && prev !== vote.key
+    });
+
+    // Throttle status updates slightly or emit on significant change?
+    // ideally don't emit status on every vote to save bandwidth, 
+    // but for < 1000 users it's probably fine to let the client deduce count or emit periodically.
+    // For now, let's NOT emit status on every vote, client counts votes received.
+}
+
+// --- API Endpoints ---
+
+app.get("/health", (req, res) => {
+    res.json({
+        ok: true,
+        mode: serialState.mode,
+        serialConnected: serialState.connected,
+        session: { status: sessionState.status, votes: sessionState.votesById.size }
+    });
 });
 
-server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.post("/session/start", (req, res) => {
+    sessionState.status = "RUNNING";
+    emitStatus();
+    res.json({ ok: true });
 });
+
+app.post("/session/pause", (req, res) => {
+    sessionState.status = "PAUSED";
+    emitStatus();
+    res.json({ ok: true });
+});
+
+app.post("/session/reset", (req, res) => {
+    sessionState.votesById.clear();
+    sessionState.lastVoteTs = null;
+    sessionState.status = "STOPPED";
+    emitStatus();
+    res.json({ ok: true });
+});
+
+// --- Socket.IO ---
+
+io.on("connection", (socket) => {
+    console.log("Client connected");
+
+    // Send initial status
+    socket.emit("status", {
+        ...serialState,
+        session: {
+            status: sessionState.status,
+            votes: sessionState.votesById.size,
+            lastVoteTs: sessionState.lastVoteTs
+        }
+    });
+
+    // Re-broadcast all current votes to new client (Snapshoting)
+    // This ensures a refreshed page gets the current state
+    if (sessionState.votesById.size > 0) {
+        const allVotes = [];
+        for (const [id, key] of sessionState.votesById.entries()) {
+            allVotes.push({ id, key, ts: Date.now(), source: 'snapshot', isUpdate: false });
+        }
+        socket.emit("snapshot", allVotes);
+    }
+});
+
+// --- Serial / Simulator Logic ---
+
+function startSerialWithRetry() {
+    let attempt = 0;
+    let port = null;
+
+    const connect = () => {
+        attempt += 1;
+        serialState.mode = "serial";
+
+        port = new SerialPort({
+            path: env.SERIAL_PATH,
+            baudRate: env.SERIAL_BAUD,
+            autoOpen: false
+        });
+
+        port.open((err) => {
+            if (err) {
+                serialState.connected = false;
+                serialState.lastError = err.message;
+                console.error(\`Serial Open Failed (Attempt \${attempt}): \${err.message}\`);
+        emitStatus({ note: \`serial open failed (attempt \${attempt})\` });
+
+        // Fallback Logic
+        if (env.ALLOW_SIM_FALLBACK && !stopSim) {
+          console.log("Falling back to SIMULATOR due to Serial failure.");
+          serialState.mode = "simulator";
+          stopSim = startSimulator({
+            emitVote: (v) => acceptVote(v),
+            emitStatus: (s) => {
+                 // merge simulator status into our app state
+                 if(s.connected !== undefined) serialState.connected = s.connected;
+                 emitStatus();
+            }
+          });
+        }
+
+        const backoffMs = Math.min(5000, 250 * attempt);
+        setTimeout(connect, backoffMs);
+        return;
+      }
+
+      // Connected!
+      console.log("Serial Port Connected!");
+      serialState.connected = true;
+      serialState.lastError = null;
+      
+      // If we were simulating, stop it now
+      if (stopSim) {
+          stopSim();
+          stopSim = null;
+      }
+      
+      emitStatus({ note: "serial connected" });
+
+      const parser = port.pipe(new ReadlineParser({ delimiter: "\n" }));
+      
+      parser.on("data", (line) => {
+        const trimmed = String(line).trim();
+        if (!trimmed) return;
+        if (trimmed.length > 512) return; // guardrail
+
+        try {
+          // Expecting JSON from Arduino: {"id": "...", "key": "..."}
+          const obj = JSON.parse(trimmed);
+          const parsed = VoteSchema.parse(obj);
+          acceptVote(parsed);
+        } catch (e) {
+          // console.log("Invalid Packet:", trimmed);
+        }
+      });
+
+      port.on("close", () => {
+        console.log("Serial Port Closed");
+        serialState.connected = false;
+        serialState.lastError = "serial closed";
+        emitStatus();
+        const backoffMs = Math.min(5000, 250 * attempt);
+        setTimeout(connect, backoffMs);
+      });
+
+      port.on("error", (e) => {
+        console.error("Serial Port Error:", e.message);
+        serialState.connected = false;
+        serialState.lastError = e.message;
+        emitStatus({ note: "serial error" });
+        try { port.close(); } catch {}
+      });
+    });
+  };
+
+  connect();
+}
+
+function start() {
+  if (env.SIMULATOR) {
+    console.log("Starting in FORCED SIMULATOR mode");
+    serialState.mode = "simulator";
+    stopSim = startSimulator({
+      emitVote: (v) => acceptVote(v),
+      emitStatus: (s) => {
+          if(s.connected !== undefined) serialState.connected = s.connected;
+          emitStatus();
+      }
+    });
+  } else {
+    startSerialWithRetry();
+  }
+
+  server.listen(env.PORT, () => {
+    console.log(\`Server listening on port \${env.PORT}\`);
+    emitStatus({ note: \`listening on \${env.PORT}\` });
+  });
+}
+
+start();

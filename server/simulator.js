@@ -1,27 +1,28 @@
-const io = require('socket.io-client');
+export function startSimulator({ emitVote, emitStatus, intervalMs = 350 } = {}) {
+  if (!emitVote) throw new Error("startSimulator requires emitVote()");
 
-const SERVER_URL = 'http://localhost:3001';
-const socket = io(SERVER_URL);
+  if (emitStatus) {
+    emitStatus({ mode: "simulator", connected: true, lastError: null });
+  }
 
-const POSSIBLE_ANSWERS = ['A', 'B', 'C', 'D', 'E'];
-const NUM_CLICKERS = 30;
-const CLICKER_IDS = Array.from({ length: NUM_CLICKERS }, (_, i) => \`ID_\${1000 + i}\`);
+  const keys = ["A", "B", "C", "D", "E"];
+  let n = 0;
 
-console.log('Starting Clicker Simulator...');
+  const timer = setInterval(() => {
+    n += 1;
+    const vote = {
+      id: String(1000 + (n % 35)).padStart(4, "0"),
+      key: keys[Math.floor(Math.random() * keys.length)],
+      ts: Date.now(),
+      source: "sim"
+    };
+    emitVote(vote);
+  }, intervalMs);
 
-socket.on('connect', () => {
-  console.log('Connected to server! Sending random votes every 500ms...');
-  
-  setInterval(() => {
-    const id = CLICKER_IDS[Math.floor(Math.random() * CLICKER_IDS.length)];
-    const response = POSSIBLE_ANSWERS[Math.floor(Math.random() * POSSIBLE_ANSWERS.length)];
-    
-    socket.emit('simulate_vote', {
-        id: id,
-        response: response,
-        timestamp: Date.now()
-    });
-    
-    console.log(\`Sent: \${id} -> \${response}\`);
-  }, 500);
-});
+  return () => {
+    clearInterval(timer);
+    if (emitStatus) {
+      emitStatus({ mode: "simulator", connected: false, lastError: "Stopped" });
+    }
+  };
+}
