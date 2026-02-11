@@ -84,12 +84,20 @@ export const QuizProvider = ({ children }) => {
         setParticipants((prev) => ({ ...prev, [id]: name }));
     };
 
+    const setAllParticipants = (newList) => {
+        setParticipants(newList);
+    };
+
     const removeParticipant = (id) => {
         setParticipants((prev) => {
             const next = { ...prev };
             delete next[id];
             return next;
         });
+    };
+
+    const clearParticipants = () => {
+        setParticipants({});
     };
 
     const goToNextSlide = () => {
@@ -118,7 +126,9 @@ export const QuizProvider = ({ children }) => {
                 setCurrentQuestionIndex,
                 participants,
                 updateParticipant,
+                setAllParticipants,
                 removeParticipant,
+                clearParticipants,
                 lastVoteId,
                 setLastVoteId
             }}

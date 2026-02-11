@@ -304,6 +304,7 @@ body {
   color: var(--accent-color);
   background: linear-gradient(45deg, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -483,4 +484,88 @@ body {
   font-style: italic;
   color: var(--text-secondary);
   opacity: 0.5;
+}
+
+/* Participant Manager Extensions */
+.header-actions-mini {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bulk-import-area {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.import-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.import-header label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.bulk-import-area textarea {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  resize: vertical;
+}
+
+.btn-xs {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.btn-mini {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 0.3rem;
+  color: var(--text-secondary);
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.participant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.p-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.p-id {
+  font-family: 'Fira Code', monospace;
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.p-name {
+  font-weight: 500;
 }

@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { useQuiz } from '../context/QuizContext';
-import { UserPlus, UserMinus, UserCheck, Hash } from 'lucide-react';
+import { UserPlus, UserMinus, UserCheck, Hash, Upload, Download, Trash2, X } from 'lucide-react';
 
 export default function ParticipantManager() {
     const {
         participants,
         updateParticipant,
+        setAllParticipants,
         removeParticipant,
+        clearParticipants,
         lastVoteId
     } = useQuiz();
 
     const [idInput, setIdInput] = useState('');
     const [nameInput, setNameInput] = useState('');
+    const [showImport, setShowImport] = useState(false);
+    const [bulkText, setBulkText] = useState('');
 
     const handleAdd = (e) => {
         e.preventDefault();
@@ -20,6 +24,34 @@ export default function ParticipantManager() {
             setIdInput('');
             setNameInput('');
         }
+    };
+
+    const handleImport = () => {
+        const lines = bulkText.split('\n');
+        const newParticipants = { ...participants };
+        lines.forEach(line => {
+            const parts = line.split(/[:\t,-]/);
+            if (parts.length >= 2) {
+                const id = parts[0].trim();
+                const name = parts.slice(1).join(' ').trim();
+                if (id && name) {
+                    newParticipants[id] = name;
+                }
+            }
+        });
+        setAllParticipants(newParticipants);
+        setBulkText('');
+        setShowImport(false);
+    };
+
+    const handleExport = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(participants, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "participantes_clicker.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
     };
 
     const useLastId = () => {
@@ -32,7 +64,34 @@ export default function ParticipantManager() {
         <section className="card participants-card">
             <div className="card-header">
                 <h2>Asignar Nombres</h2>
+                <div className="header-actions-mini">
+                    <button className="icon-btn" onClick={() => setShowImport(!showImport)} title="Importar lista">
+                        <Upload size={16} />
+                    </button>
+                    <button className="icon-btn" onClick={handleExport} title="Descargar lista">
+                        <Download size={16} />
+                    </button>
+                    <button className="icon-btn text-danger" onClick={clearParticipants} title="Borrar todos">
+                        <Trash2 size={16} />
+                    </button>
+                </div>
             </div>
+
+            {showImport && (
+                <div className="bulk-import-area">
+                    <div className="import-header">
+                        <label>Pega tu lista (ID: Nombre)</label>
+                        <button className="icon-btn" onClick={() => setShowImport(false)}><X size={14} /></button>
+                    </div>
+                    <textarea
+                        value={bulkText}
+                        onChange={(e) => setBulkText(e.target.value)}
+                        placeholder="1001: Juan Pérez&#10;1002: María García"
+                        rows={4}
+                    />
+                    <button className="btn btn-primary btn-xs" onClick={handleImport}>Aplicar Lista</button>
+                </div>
+            )}
 
             <form onSubmit={handleAdd} className="participant-form">
                 <div className="input-row">
