@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Wifi, WifiOff, Play, Square, RotateCcw } from 'lucide-react';
+import { Wifi, WifiOff, Play, Square, RotateCcw, Presentation } from 'lucide-react';
+import { QuizProvider, useQuiz } from './context/QuizContext';
+import QuizManager from './components/QuizManager';
+import PresentationView from './components/PresentationView';
 
 // Connect to the backend
 const socket = io('http://localhost:3001');
 
-function App() {
+// Main Content Wrapper to use Context
+function Dashboard() {
     const [connected, setConnected] = useState(false);
     const [hardwareStatus, setHardwareStatus] = useState('Disconnected');
-    const [votes, setVotes] = useState({}); // Map of ID -> Response
+    const [votes, setVotes] = useState({});
     const [isPolling, setIsPolling] = useState(false);
     const [recentLog, setRecentLog] = useState([]);
+
+    const { presentationMode, setPresentationMode, currentQuestion } = useQuiz();
 
     useEffect(() => {
         socket.on('connect', () => {
@@ -46,7 +52,6 @@ function App() {
         };
     }, [isPolling]);
 
-    // Aggregate data for chart
     const data = ['A', 'B', 'C', 'D', 'E'].map(option => ({
         name: option,
         count: Object.values(votes).filter(v => v === option).length
@@ -59,6 +64,30 @@ function App() {
         setRecentLog([]);
     };
 
+    // If in Presentation Mode, show the Overlay
+    if (presentationMode) {
+        return (
+            <PresentationView>
+                <div style={{ width: '100%', height: '400px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={data}>
+                            <XAxis dataKey="name" stroke="#8884d8" />
+                            <YAxis stroke="#8884d8" />
+                            <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                                {data.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'][index]} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                    <div style={{ textAlign: 'center', color: 'white', marginTop: '1rem' }}>
+                        <h2>{totalVotes} Votes Received</h2>
+                    </div>
+                </div>
+            </PresentationView>
+        );
+    }
+
     return (
         <div className="app-container">
             <header className="app-header">
@@ -66,14 +95,19 @@ function App() {
                     <div className="logo-icon"></div>
                     <h1>PointSolutions <span className="highlight">Modern</span></h1>
                 </div>
-                <div className={`status-badge ${connected ? 'online' : 'offline'}`}>
-                    {connected ? <Wifi size={16} /> : <WifiOff size={16} />}
-                    <span>{hardwareStatus}</span>
+                <div className="header-actions">
+                    <button className="btn btn-secondary" onClick={() => setPresentationMode(true)}>
+                        <Presentation size={18} /> Present
+                    </button>
+                    <div className={`status-badge ${connected ? 'online' : 'offline'}`}>
+                        {connected ? <Wifi size={16} /> : <WifiOff size={16} />}
+                        <span>{hardwareStatus}</span>
+                    </div>
                 </div>
             </header>
 
             <main className="dashboard-grid">
-                {/* Chart Section */}
+                {/* Main Chart Area */}
                 <section className="card chart-card">
                     <div className="card-header">
                         <h2>Live Results</h2>
@@ -98,7 +132,7 @@ function App() {
                     </div>
                 </section>
 
-                {/* Controls & Log Section */}
+                {/* Sidebar */}
                 <div className="side-column">
                     <section className="card controls-card">
                         <h2>Session Control</h2>
@@ -113,7 +147,7 @@ function App() {
                                 </button>
                             )}
                             <button className="btn btn-secondary" onClick={handleReset}>
-                                <RotateCcw size={18} /> Reset
+                                <RotateCcw size={18} /> Reset Votes
                             </button>
                         </div>
                         <div className="polling-indicator">
@@ -121,18 +155,28 @@ function App() {
                         </div>
                     </section>
 
+                    {/* New Quiz Manager */}
+                    <QuizManager />
+
                     <section className="card log-card">
                         <h2>Activity Log</h2>
                         <ul className="log-list">
                             {recentLog.map((log, i) => (
                                 <li key={i} className="log-item">{log}</li>
                             ))}
-                            {recentLog.length === 0 && <li className="log-empty">No incoming votes...</li>}
                         </ul>
                     </section>
                 </div>
             </main>
         </div>
+    );
+}
+
+function App() {
+    return (
+        <QuizProvider>
+            <Dashboard />
+        </QuizProvider>
     );
 }
 
