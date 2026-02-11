@@ -1,43 +1,75 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const QuizContext = createContext();
+const QUIZ_STORAGE_KEY = 'modern-clicker-quiz-state-v1';
+
+const DEFAULT_QUESTIONS = [
+    {
+        id: 1,
+        text: '¿Cuál es la capital de Francia?',
+        options: [
+            { label: 'A', text: 'Londres' },
+            { label: 'B', text: 'Berlín' },
+            { label: 'C', text: 'París' },
+            { label: 'D', text: 'Madrid' },
+            { label: 'E', text: 'Roma' }
+        ],
+        correctAnswer: 'C'
+    }
+];
+
+const loadPersistedState = () => {
+    if (typeof window === 'undefined') return null;
+
+    try {
+        const raw = window.localStorage.getItem(QUIZ_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) return null;
+        return parsed;
+    } catch {
+        return null;
+    }
+};
 
 export const useQuiz = () => useContext(QuizContext);
 
 export const QuizProvider = ({ children }) => {
-    const [questions, setQuestions] = useState([
-        {
-            id: 1,
-            text: "What is the capital of France?",
-            options: [
-                { label: "A", text: "London" },
-                { label: "B", text: "Berlin" },
-                { label: "C", text: "Paris" },
-                { label: "D", text: "Madrid" },
-                { label: "E", text: "Rome" }
-            ],
-            correctAnswer: "C"
-        }
-    ]);
+    const persisted = useMemo(() => loadPersistedState(), []);
 
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [questions, setQuestions] = useState(persisted?.questions ?? DEFAULT_QUESTIONS);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
+        persisted?.currentQuestionIndex ?? 0
+    );
     const [presentationMode, setPresentationMode] = useState(false);
-    const [participants, setParticipants] = useState({}); // { id: name }
+    const [participants, setParticipants] = useState(persisted?.participants ?? {});
     const [lastVoteId, setLastVoteId] = useState(null);
 
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const state = {
+            questions,
+            currentQuestionIndex,
+            participants
+        };
+
+        window.localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(state));
+    }, [questions, currentQuestionIndex, participants]);
+
     const addQuestion = (question) => {
-        setQuestions([...questions, { ...question, id: Date.now() }]);
+        setQuestions((prev) => [...prev, { ...question, id: Date.now() }]);
     };
 
     const updateQuestion = (id, updated) => {
-        setQuestions(questions.map(q => q.id === id ? { ...updated, id } : q));
+        setQuestions((prev) => prev.map((q) => (q.id === id ? { ...updated, id } : q)));
     };
 
     const deleteQuestion = (id) => {
         setQuestions((prev) => {
             if (prev.length <= 1) return prev;
 
-            const next = prev.filter(q => q.id !== id);
+            const next = prev.filter((q) => q.id !== id);
 
             setCurrentQuestionIndex((idx) => {
                 if (idx >= next.length) return Math.max(0, next.length - 1);
@@ -49,11 +81,11 @@ export const QuizProvider = ({ children }) => {
     };
 
     const updateParticipant = (id, name) => {
-        setParticipants(prev => ({ ...prev, [id]: name }));
+        setParticipants((prev) => ({ ...prev, [id]: name }));
     };
 
     const removeParticipant = (id) => {
-        setParticipants(prev => {
+        setParticipants((prev) => {
             const next = { ...prev };
             delete next[id];
             return next;
@@ -61,38 +93,36 @@ export const QuizProvider = ({ children }) => {
     };
 
     const goToNextSlide = () => {
-        if (currentQuestionIndex < questions.length - 1) {
-            setCurrentQuestionIndex(prev => prev + 1);
-        }
+        setCurrentQuestionIndex((prev) => Math.min(prev + 1, questions.length - 1));
     };
 
     const goToPrevSlide = () => {
-        if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(prev => prev - 1);
-        }
+        setCurrentQuestionIndex((prev) => Math.max(prev - 1, 0));
     };
 
     const currentQuestion = questions[currentQuestionIndex];
 
     return (
-        <QuizContext.Provider value={{
-            questions,
-            currentQuestion,
-            currentQuestionIndex,
-            addQuestion,
-            updateQuestion,
-            deleteQuestion,
-            goToNextSlide,
-            goToPrevSlide,
-            presentationMode,
-            setPresentationMode,
-            setCurrentQuestionIndex,
-            participants,
-            updateParticipant,
-            removeParticipant,
-            lastVoteId,
-            setLastVoteId
-        }}>
+        <QuizContext.Provider
+            value={{
+                questions,
+                currentQuestion,
+                currentQuestionIndex,
+                addQuestion,
+                updateQuestion,
+                deleteQuestion,
+                goToNextSlide,
+                goToPrevSlide,
+                presentationMode,
+                setPresentationMode,
+                setCurrentQuestionIndex,
+                participants,
+                updateParticipant,
+                removeParticipant,
+                lastVoteId,
+                setLastVoteId
+            }}
+        >
             {children}
         </QuizContext.Provider>
     );

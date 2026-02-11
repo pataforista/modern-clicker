@@ -1,63 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Wifi, WifiOff, Play, Square, RotateCcw, Presentation } from 'lucide-react';
+import {
+  Wifi,
+  WifiOff,
+  Play,
+  Square,
+  RotateCcw,
+  Presentation,
+  Download,
+  CloudOff,
+  CheckCircle2
+} from 'lucide-react';
 import { QuizProvider, useQuiz } from './context/QuizContext';
 import QuizManager from './components/QuizManager';
 import PresentationView from './components/PresentationView';
 import ParticipantManager from './components/ParticipantManager';
 
-// Connect to the backend using Env Var or Default
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
-const socket = io(SOCKET_URL);
+const socket = io(SOCKET_URL, {
+  autoConnect: true,
+  reconnection: true
+});
 
-// Main Content Wrapper to use Context
+const BAR_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+
 function Dashboard() {
   const [connected, setConnected] = useState(false);
   const [sessionStatus, setSessionStatus] = useState({ status: 'STOPPED', votes: 0 });
-  const [serverNote, setServerNote] = useState('Connecting...');
-
+  const [serverNote, setServerNote] = useState('Conectando al servidor...');
   const [votes, setVotes] = useState({});
-  const [recentLog, setRecentLog] = useState([]);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   const { presentationMode, setPresentationMode, currentQuestion, setLastVoteId } = useQuiz();
 
   useEffect(() => {
     socket.on('connect', () => {
       setConnected(true);
-      setServerNote('Connected');
+      setServerNote('Servidor conectado. Puedes iniciar una sesión.');
     });
 
     socket.on('disconnect', () => {
       setConnected(false);
-      setServerNote('Disconnected');
+      setServerNote('Sin conexión al servidor. Revisa cable/puerto o usa simulador.');
     });
 
     socket.on('status', (data) => {
-      // Data: { mode, connected, session: { status, votes }, note }
       if (data.note) setServerNote(data.note);
       if (data.session) setSessionStatus(data.session);
     });
 
     socket.on('vote', (data) => {
-      // Data: { id, key, ts, source, isUpdate }
-      setVotes(prev => ({
+      setVotes((prev) => ({
         ...prev,
-        [data.id]: data.key // Contract uses 'key', not 'response'
+        [data.id]: data.key
       }));
-
-      // Track last vote ID for participant registration
       setLastVoteId(data.id);
-
-      // Only log if it's new, or maybe log updates too?
-      const time = new Date(data.ts).toLocaleTimeString();
-      setRecentLog(prev => [\`[\${time}] \${data.id} -> \${data.key}\`, ...prev].slice(0, 15));
     });
 
     socket.on('snapshot', (allVotes) => {
-        const newVotes = {};
-        allVotes.forEach(v => { newVotes[v.id] = v.key; });
-        setVotes(newVotes);
+      const newVotes = {};
+      allVotes.forEach((v) => {
+        newVotes[v.id] = v.key;
+      });
+      setVotes(newVotes);
     });
 
     return () => {
@@ -67,48 +74,78 @@ function Dashboard() {
       socket.off('vote');
       socket.off('snapshot');
     };
+  }, [setLastVoteId]);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault();
+      setDeferredPrompt(event);
+    };
+
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
   }, []);
 
-  // Control Functions
   const sendCommand = async (endpoint) => {
-      try {
-          await fetch(\`\${SOCKET_URL}/session/\${endpoint}\`, { method: 'POST' });
-          if (endpoint === 'reset') {
-              setVotes({});
-              setRecentLog([]);
-          }
-      } catch (e) {
-          console.error("Command failed", e);
+    try {
+      await fetch(`${SOCKET_URL}/session/${endpoint}`, { method: 'POST' });
+      if (endpoint === 'reset') {
+        setVotes({});
       }
+    } catch (e) {
+      console.error('Command failed', e);
+      setServerNote('No se pudo enviar el comando al servidor.');
+    }
   };
 
-  const data = ['A', 'B', 'C', 'D', 'E'].map(option => ({
-    name: option,
-    count: Object.values(votes).filter(v => v === option).length
-  }));
+  const installApp = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+  };
+
+  const data = useMemo(
+    () =>
+      ['A', 'B', 'C', 'D', 'E'].map((option) => ({
+        name: option,
+        count: Object.values(votes).filter((v) => v === option).length
+      })),
+    [votes]
+  );
 
   const totalVotes = Object.keys(votes).length;
+  const isSessionRunning = sessionStatus.status === 'RUNNING';
 
-  // Presentación
   if (presentationMode) {
     return (
       <PresentationView>
-          <div style={{ width: '100%', height: '400px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
-                <XAxis dataKey="name" stroke="#8884d8" />
-                <YAxis stroke="#8884d8" />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                  {data.map((entry, index) => (
-                    <Cell key={`cell - ${ index }`} fill={['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'][index]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div style={{ textAlign: 'center', color: 'white', marginTop: '1rem' }}>
-                <h2>{totalVotes} Votos Recibidos</h2>
-            </div>
+        <div style={{ width: '100%', height: '400px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data}>
+              <XAxis dataKey="name" stroke="#8884d8" />
+              <YAxis stroke="#8884d8" />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                {data.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={BAR_COLORS[index]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <div style={{ textAlign: 'center', color: 'white', marginTop: '1rem' }}>
+            <h2>{totalVotes} votos recibidos</h2>
           </div>
+        </div>
       </PresentationView>
     );
   }
@@ -117,42 +154,46 @@ function Dashboard() {
     <div className="app-container">
       <header className="app-header">
         <div className="brand">
-          <div className="logo-icon"></div>
           <h1>PointSolutions <span className="highlight">Modern</span></h1>
+          <p className="brand-subtitle">Panel simple para docentes y facilitadores</p>
         </div>
         <div className="header-actions">
-           <button className="btn btn-secondary" onClick={() => setPresentationMode(true)}>
-             <Presentation size={18} /> Proyectar
-           </button>
-           <div className={`status - badge ${ connected? 'online': 'offline' }`}>
+          <button className="btn btn-secondary" onClick={() => setPresentationMode(true)}>
+            <Presentation size={18} /> Proyectar
+          </button>
+          {deferredPrompt && (
+            <button className="btn btn-secondary" onClick={installApp}>
+              <Download size={18} /> Instalar app
+            </button>
+          )}
+          <div className={`status-badge ${connected ? 'online' : 'offline'}`}>
             {connected ? <Wifi size={16} /> : <WifiOff size={16} />}
-            <span>{connected ? 'Conectado' : 'Desconectado'}</span>
+            <span>{connected ? 'Servidor conectado' : 'Servidor desconectado'}</span>
           </div>
         </div>
       </header>
 
       <main className="dashboard-grid">
-        {/* Chart Section */}
         <section className="card chart-card">
-          <div className="card-header">
+          <div className="card-header chart-header">
             <div>
-                <h2>Resultados en Vivo</h2>
-                <div className="active-question">{currentQuestion?.text ?? 'Sin pregunta activa'}</div>
+              <h2>Resultados en vivo</h2>
+              <div className="active-question">{currentQuestion?.text ?? 'Sin pregunta activa'}</div>
             </div>
-            <div className="vote-count">{totalVotes} Votos</div>
+            <div className="vote-count">{totalVotes} votos</div>
           </div>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data}>
                 <XAxis dataKey="name" stroke="#8884d8" />
                 <YAxis stroke="#8884d8" />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}
                   itemStyle={{ color: '#fff' }}
                 />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                  {data.map((entry, index) => (
-                    <Cell key={`cell - ${ index }`} fill={['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'][index]} />
+                  {data.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={BAR_COLORS[index]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -160,45 +201,48 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* Sidebar */}
         <div className="side-column">
+          <section className="card quick-guide-card">
+            <h2>Guía rápida (3 pasos)</h2>
+            <ol>
+              <li><strong>1.</strong> Presiona <strong>Iniciar sesión</strong>.</li>
+              <li><strong>2.</strong> Pide a las personas que respondan en su control.</li>
+              <li><strong>3.</strong> Mira los resultados en vivo y proyecta si lo necesitas.</li>
+            </ol>
+            <div className="status-line">
+              {isOnline ? <CheckCircle2 size={16} /> : <CloudOff size={16} />}
+              <span>
+                {isOnline
+                  ? 'Internet disponible. Puedes usar funciones web y sincronizar cambios.'
+                  : 'Sin internet. La interfaz seguirá funcionando con los datos guardados localmente.'}
+              </span>
+            </div>
+            <p className="server-note">{serverNote}</p>
+          </section>
+
           <section className="card controls-card">
-            <h2>Control de Sesión</h2>
+            <h2>Control de sesión</h2>
             <div className="button-group">
-              {sessionStatus.status !== 'RUNNING' ? (
+              {!isSessionRunning ? (
                 <button className="btn btn-primary" onClick={() => sendCommand('start')}>
-                  <Play size={18} /> Iniciar Sesión
+                  <Play size={18} /> Iniciar sesión
                 </button>
               ) : (
                 <button className="btn btn-danger" onClick={() => sendCommand('pause')}>
-                  <Square size={18} /> Pausar Sesión
+                  <Square size={18} /> Pausar sesión
                 </button>
               )}
               <button className="btn btn-secondary" onClick={() => sendCommand('reset')}>
-                <RotateCcw size={18} /> Limpiar Votos
+                <RotateCcw size={18} /> Limpiar votos
               </button>
             </div>
             <div className="polling-indicator">
-              Estado: <span className={sessionStatus.status === 'RUNNING' ? 'text-green' : 'text-gray'}>
-                {sessionStatus.status === 'RUNNING' ? 'ACTIVA' : 'DETENIDA'}
-              </span>
+              Estado: <span className={isSessionRunning ? 'text-green' : 'text-gray'}>{isSessionRunning ? 'ACTIVA' : 'DETENIDA'}</span>
             </div>
           </section>
-          
+
           <QuizManager />
           <ParticipantManager />
-
-          {/* Activity Log hidden for simplicity as per plan */}
-          {false && (
-            <section className="card log-card">
-                <h2>Registro de Actividad</h2>
-                <ul className="log-list">
-                {recentLog.map((log, i) => (
-                    <li key={i} className="log-item">{log}</li>
-                ))}
-                </ul>
-            </section>
-          )}
         </div>
       </main>
     </div>
