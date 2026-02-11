@@ -22,17 +22,42 @@ export const QuizProvider = ({ children }) => {
 
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [presentationMode, setPresentationMode] = useState(false);
+    const [participants, setParticipants] = useState({}); // { id: name }
+    const [lastVoteId, setLastVoteId] = useState(null);
 
     const addQuestion = (question) => {
         setQuestions([...questions, { ...question, id: Date.now() }]);
     };
 
     const updateQuestion = (id, updated) => {
-        setQuestions(questions.map(q => q.id === id ? updated : q));
+        setQuestions(questions.map(q => q.id === id ? { ...updated, id } : q));
     };
 
     const deleteQuestion = (id) => {
-        setQuestions(questions.filter(q => q.id !== id));
+        setQuestions((prev) => {
+            if (prev.length <= 1) return prev;
+
+            const next = prev.filter(q => q.id !== id);
+
+            setCurrentQuestionIndex((idx) => {
+                if (idx >= next.length) return Math.max(0, next.length - 1);
+                return idx;
+            });
+
+            return next;
+        });
+    };
+
+    const updateParticipant = (id, name) => {
+        setParticipants(prev => ({ ...prev, [id]: name }));
+    };
+
+    const removeParticipant = (id) => {
+        setParticipants(prev => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+        });
     };
 
     const goToNextSlide = () => {
@@ -61,7 +86,12 @@ export const QuizProvider = ({ children }) => {
             goToPrevSlide,
             presentationMode,
             setPresentationMode,
-            setCurrentQuestionIndex
+            setCurrentQuestionIndex,
+            participants,
+            updateParticipant,
+            removeParticipant,
+            lastVoteId,
+            setLastVoteId
         }}>
             {children}
         </QuizContext.Provider>
