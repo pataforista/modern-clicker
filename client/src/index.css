@@ -569,3 +569,132 @@ body {
 .p-name {
   font-weight: 500;
 }
+.brand-subtitle {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.status-line {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.server-note {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-top: 0.6rem;
+}
+
+.participants-card,
+.quiz-manager,
+.response-card {
+  gap: 0.8rem;
+}
+
+.participant-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.input-row-3 {
+  grid-template-columns: 1fr 1.6fr 0.8fr;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.input-group label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.input-group input,
+.participant-search-row input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.id-input-wrapper {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.id-input-wrapper input {
+  flex: 1;
+}
+
+.participant-search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+}
+
+.participant-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.empty-text {
+  color: var(--text-secondary);
+  margin: 0.5rem 0;
+}
+
+.p-number {
+  background: rgba(59, 130, 246, 0.15);
+  color: #bfdbfe;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.75rem;
+}
+
+.list-truncate-note {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin: 0.5rem 0 0;
+}
+
+.btn-sm {
+  font-size: 0.85rem;
+  padding: 0.55rem 0.75rem;
+}
+
+.response-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.response-stats strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 1024px) {
+  .input-row,
+  .input-row-3,
+  .response-stats {
+    grid-template-columns: 1fr;
+  }
+}
