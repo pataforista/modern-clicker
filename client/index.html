@@ -1,15 +1,46 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/icon-192.svg" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#0f172a" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modern Clicker | PointSolutions</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/icon-192.svg" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern Clicker | PointSolutions</title>
+  <script type="text/javascript">
+    // Single Page Apps for GitHub Pages
+    // https://github.com/rafgraph/spa-github-pages
+    // This script checks to see if a redirect is present in the query string,
+    // converts it back into the correct url and adds it to the
+    // browser's history using window.history.replaceState(...),
+    // which results in the browser rendering the correct page without redirecting the user
+    (function (l) {
+      if (l.search[1] === 'p') {
+        var decoded = l.search.slice(1).split('&').map(function (s) {
+          return s.replace(/~and~/g, '&')
+        }).filter(function (s) {
+          return s !== ''
+        }).reduce(function (obj, p) {
+          var parts = p.split('=');
+          obj[parts[0]] = parts.slice(1).join('=');
+          return obj;
+        }, {});
+        if (decoded.p !== undefined) {
+          window.history.replaceState(null, null,
+            l.pathname.slice(0, -1) + (decoded.p || '') +
+            (decoded.q ? ('?' + decoded.q) : '') +
+            l.hash
+          );
+        }
+      }
+    }(window.location))
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

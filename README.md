@@ -68,6 +68,18 @@ Este repositorio ya incluye `netlify.toml` con configuración **desde la raíz d
 
 ---
 
+## Deploy en GitHub Pages
+Este repo incluye un GitHub Action para desplegar automáticamente el `client/` en la rama `gh-pages`.
+
+### Pasos
+1. Ve a **Settings → Actions → General** y en *Workflow permissions* selecciona **Read and write permissions**.
+2. Al hacer `push` a `main`, se activará el workflow `.github/workflows/deploy.yml`.
+3. En **Settings → Pages**, verifica que la fuente sea **Deploy from a branch** y la rama sea `gh-pages` (carpeta `/root`).
+
+> **Importante**: Para que las rutas funcionen (SPA), este repo usa un truco con `404.html` que redirige a `index.html`.
+
+---
+
 ## Uso offline (PWA)
 El cliente incluye:
 - `manifest.webmanifest`
