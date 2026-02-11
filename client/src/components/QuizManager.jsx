@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useQuiz } from '../context/QuizContext';
-import { Plus, Trash2, PlayCircle, Save, X, Edit } from 'lucide-react';
+import { Plus, Trash2, PlayCircle, Save, X, Edit, Upload } from 'lucide-react';
 
 const EMPTY_DRAFT = {
     text: '',
@@ -14,10 +14,53 @@ const EMPTY_DRAFT = {
     correctAnswer: 'A'
 };
 
+const parseQuestionsFromText = (text) => {
+    const blocks = text
+        .split(/\n\s*\n/g)
+        .map((block) => block.trim())
+        .filter(Boolean);
+
+    return blocks
+        .map((block) => {
+            const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
+            if (lines.length < 6) return null;
+
+            const [questionLine, ...rawOptions] = lines;
+            const optionMap = new Map();
+            let correctAnswer = 'A';
+
+            rawOptions.forEach((line) => {
+                const match = line.match(/^([A-E])\s*[:\).-]\s*(.*)$/i);
+                if (match) {
+                    optionMap.set(match[1].toUpperCase(), match[2].trim());
+                    return;
+                }
+
+                const answerMatch = line.match(/^RESPUESTA\s*[:\-]\s*([A-E])$/i);
+                if (answerMatch) {
+                    correctAnswer = answerMatch[1].toUpperCase();
+                }
+            });
+
+            if (optionMap.size < 5) return null;
+
+            return {
+                text: questionLine,
+                options: ['A', 'B', 'C', 'D', 'E'].map((label) => ({
+                    label,
+                    text: optionMap.get(label) ?? ''
+                })),
+                correctAnswer
+            };
+        })
+        .filter(Boolean);
+};
+
 export default function QuizManager() {
     const {
         questions,
         addQuestion,
+        addQuestions,
         updateQuestion,
         deleteQuestion,
         setPresentationMode,
@@ -26,6 +69,8 @@ export default function QuizManager() {
 
     const [editingId, setEditingId] = useState(null);
     const [draft, setDraft] = useState(EMPTY_DRAFT);
+    const [showBulkImport, setShowBulkImport] = useState(false);
+    const [bulkQuestionsText, setBulkQuestionsText] = useState('');
 
     const editingQuestion = useMemo(
         () => questions.find((q) => q.id === editingId) ?? null,
@@ -38,19 +83,17 @@ export default function QuizManager() {
     };
 
     const handleCreate = () => {
-        const question = {
-            text: 'New Question',
+        addQuestion({
+            text: 'Nueva pregunta',
             options: [
-                { label: 'A', text: 'Option 1' },
-                { label: 'B', text: 'Option 2' },
-                { label: 'C', text: 'Option 3' },
-                { label: 'D', text: 'Option 4' },
-                { label: 'E', text: 'Option 5' }
+                { label: 'A', text: 'Opción 1' },
+                { label: 'B', text: 'Opción 2' },
+                { label: 'C', text: 'Opción 3' },
+                { label: 'D', text: 'Opción 4' },
+                { label: 'E', text: 'Opción 5' }
             ],
             correctAnswer: 'A'
-        };
-
-        addQuestion(question);
+        });
     };
 
     const startEditing = (question) => {
@@ -92,14 +135,46 @@ export default function QuizManager() {
         stopEditing();
     };
 
+    const handleBulkImport = () => {
+        const parsedQuestions = parseQuestionsFromText(bulkQuestionsText);
+        if (parsedQuestions.length === 0) return;
+
+        addQuestions(parsedQuestions);
+        setBulkQuestionsText('');
+        setShowBulkImport(false);
+    };
+
     return (
         <div className="card quiz-manager">
             <div className="card-header">
                 <h2>Banco de Preguntas</h2>
-                <button className="btn btn-secondary" onClick={handleCreate}>
-                    <Plus size={16} /> Nueva Pregunta
-                </button>
+                <div className="header-actions-mini">
+                    <button className="btn btn-secondary" onClick={() => setShowBulkImport((prev) => !prev)}>
+                        <Upload size={16} /> Carga masiva
+                    </button>
+                    <button className="btn btn-secondary" onClick={handleCreate}>
+                        <Plus size={16} /> Nueva Pregunta
+                    </button>
+                </div>
             </div>
+
+            {showBulkImport && (
+                <div className="bulk-import-area">
+                    <div className="import-header">
+                        <label>Pega preguntas separadas por una línea en blanco</label>
+                        <button className="icon-btn" onClick={() => setShowBulkImport(false)}><X size={14} /></button>
+                    </div>
+                    <textarea
+                        value={bulkQuestionsText}
+                        onChange={(e) => setBulkQuestionsText(e.target.value)}
+                        rows={8}
+                        placeholder={"¿Capital de Chile?\nA: Lima\nB: Bogotá\nC: Santiago\nD: Quito\nE: Caracas\nRESPUESTA: C\n\n¿2 + 2?\nA: 1\nB: 2\nC: 3\nD: 4\nE: 5\nRESPUESTA: D"}
+                    />
+                    <button className="btn btn-primary btn-xs" onClick={handleBulkImport}>
+                        Importar preguntas
+                    </button>
+                </div>
+            )}
 
             <div className="question-list">
                 {questions.map((q, idx) => (

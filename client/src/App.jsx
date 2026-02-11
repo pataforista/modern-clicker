@@ -10,7 +10,8 @@ import {
   Presentation,
   Download,
   CloudOff,
-  CheckCircle2
+  CheckCircle2,
+  FileSpreadsheet
 } from 'lucide-react';
 import { QuizProvider, useQuiz } from './context/QuizContext';
 import QuizManager from './components/QuizManager';
@@ -25,15 +26,29 @@ const socket = io(SOCKET_URL, {
 
 const BAR_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
 
+const downloadCsv = (filename, rows) => {
+  const body = rows.map((row) => row.map((value) => `"${(value ?? '').toString().replaceAll('"', '""')}"`).join(',')).join('\n');
+  const blob = new Blob([body], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
 function Dashboard() {
   const [connected, setConnected] = useState(false);
   const [sessionStatus, setSessionStatus] = useState({ status: 'STOPPED', votes: 0 });
   const [serverNote, setServerNote] = useState('Conectando al servidor...');
   const [votes, setVotes] = useState({});
+  const [voteLog, setVoteLog] = useState({});
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
-  const { presentationMode, setPresentationMode, currentQuestion, setLastVoteId } = useQuiz();
+  const { presentationMode, setPresentationMode, currentQuestion, setLastVoteId, participants } = useQuiz();
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -56,15 +71,28 @@ function Dashboard() {
         ...prev,
         [data.id]: data.key
       }));
+      setVoteLog((prev) => ({
+        ...prev,
+        [data.id]: {
+          key: data.key,
+          respondedAt: new Date().toISOString()
+        }
+      }));
       setLastVoteId(data.id);
     });
 
     socket.on('snapshot', (allVotes) => {
       const newVotes = {};
+      const snapshotLog = {};
       allVotes.forEach((v) => {
         newVotes[v.id] = v.key;
+        snapshotLog[v.id] = {
+          key: v.key,
+          respondedAt: new Date().toISOString()
+        };
       });
       setVotes(newVotes);
+      setVoteLog(snapshotLog);
     });
 
     return () => {
@@ -101,6 +129,7 @@ function Dashboard() {
       await fetch(`${SOCKET_URL}/session/${endpoint}`, { method: 'POST' });
       if (endpoint === 'reset') {
         setVotes({});
+        setVoteLog({});
       }
     } catch (e) {
       console.error('Command failed', e);
@@ -123,6 +152,52 @@ function Dashboard() {
       })),
     [votes]
   );
+
+  const participantRecords = useMemo(
+    () => Object.entries(participants).map(([id, participant]) => ({
+      id,
+      name: participant?.name ?? '',
+      number: participant?.number ?? '',
+      answer: votes[id] ?? '',
+      responded: Boolean(votes[id]),
+      respondedAt: voteLog[id]?.respondedAt ?? ''
+    })),
+    [participants, votes, voteLog]
+  );
+
+  const responseSummary = useMemo(() => {
+    const total = participantRecords.length;
+    const answered = participantRecords.filter((participant) => participant.responded).length;
+    const unknown = Object.keys(votes).filter((id) => !participants[id]).length;
+
+    return {
+      total,
+      answered,
+      missing: Math.max(total - answered, 0),
+      unknown,
+      rate: total > 0 ? Math.round((answered / total) * 100) : 0
+    };
+  }, [participantRecords, votes, participants]);
+
+  const exportResponseCsv = () => {
+    const rows = [
+      ['id_control', 'nombre', 'numero', 'respondio', 'respuesta', 'fecha_hora'],
+      ...participantRecords.map((participant) => [
+        participant.id,
+        participant.name,
+        participant.number,
+        participant.responded ? 'SI' : 'NO',
+        participant.answer,
+        participant.respondedAt
+      ])
+    ];
+
+    const unknownVotes = Object.entries(votes)
+      .filter(([id]) => !participants[id])
+      .map(([id, answer]) => [id, 'SIN REGISTRO', '', 'SI', answer, voteLog[id]?.respondedAt ?? '']);
+
+    downloadCsv(`respuestas_${new Date().toISOString().slice(0, 10)}.csv`, [...rows, ...unknownVotes]);
+  };
 
   const totalVotes = Object.keys(votes).length;
   const isSessionRunning = sessionStatus.status === 'RUNNING';
@@ -238,6 +313,21 @@ function Dashboard() {
             </div>
             <div className="polling-indicator">
               Estado: <span className={isSessionRunning ? 'text-green' : 'text-gray'}>{isSessionRunning ? 'ACTIVA' : 'DETENIDA'}</span>
+            </div>
+          </section>
+
+          <section className="card response-card">
+            <div className="card-header">
+              <h2>Registro de respuestas</h2>
+              <button className="btn btn-secondary btn-sm" onClick={exportResponseCsv}>
+                <FileSpreadsheet size={16} /> Exportar CSV
+              </button>
+            </div>
+            <div className="response-stats">
+              <div><strong>{responseSummary.answered}</strong> respondieron</div>
+              <div><strong>{responseSummary.missing}</strong> sin responder</div>
+              <div><strong>{responseSummary.rate}%</strong> cobertura</div>
+              {responseSummary.unknown > 0 && <div><strong>{responseSummary.unknown}</strong> IDs sin registro</div>}
             </div>
           </section>
 

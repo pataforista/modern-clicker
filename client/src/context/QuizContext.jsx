@@ -18,6 +18,25 @@ const DEFAULT_QUESTIONS = [
     }
 ];
 
+const normalizeParticipant = (id, participant) => {
+    if (typeof participant === 'string') {
+        return { id, name: participant, number: '' };
+    }
+
+    return {
+        id,
+        name: participant?.name?.toString().trim() ?? '',
+        number: participant?.number?.toString().trim() ?? ''
+    };
+};
+
+const normalizeParticipantsMap = (rawParticipants = {}) => {
+    return Object.entries(rawParticipants).reduce((acc, [id, value]) => {
+        acc[id] = normalizeParticipant(id, value);
+        return acc;
+    }, {});
+};
+
 const loadPersistedState = () => {
     if (typeof window === 'undefined') return null;
 
@@ -26,7 +45,11 @@ const loadPersistedState = () => {
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) return null;
-        return parsed;
+
+        return {
+            ...parsed,
+            participants: normalizeParticipantsMap(parsed.participants)
+        };
     } catch {
         return null;
     }
@@ -61,6 +84,16 @@ export const QuizProvider = ({ children }) => {
         setQuestions((prev) => [...prev, { ...question, id: Date.now() }]);
     };
 
+    const addQuestions = (newQuestions) => {
+        setQuestions((prev) => [
+            ...prev,
+            ...newQuestions.map((question, index) => ({
+                ...question,
+                id: Date.now() + index + 1
+            }))
+        ]);
+    };
+
     const updateQuestion = (id, updated) => {
         setQuestions((prev) => prev.map((q) => (q.id === id ? { ...updated, id } : q)));
     };
@@ -80,12 +113,14 @@ export const QuizProvider = ({ children }) => {
         });
     };
 
-    const updateParticipant = (id, name) => {
-        setParticipants((prev) => ({ ...prev, [id]: name }));
+    const updateParticipant = (id, payload) => {
+        const normalized = normalizeParticipant(id, payload);
+        if (!normalized.name) return;
+        setParticipants((prev) => ({ ...prev, [id]: normalized }));
     };
 
     const setAllParticipants = (newList) => {
-        setParticipants(newList);
+        setParticipants(normalizeParticipantsMap(newList));
     };
 
     const removeParticipant = (id) => {
@@ -117,6 +152,7 @@ export const QuizProvider = ({ children }) => {
                 currentQuestion,
                 currentQuestionIndex,
                 addQuestion,
+                addQuestions,
                 updateQuestion,
                 deleteQuestion,
                 goToNextSlide,
