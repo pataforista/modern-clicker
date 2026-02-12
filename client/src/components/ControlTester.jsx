@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Activity, User, Hash, Clock, Info, Wifi, WifiOff, Settings } from 'lucide-react';
+import { X, Activity, User, Hash, Clock, Info, Wifi, WifiOff, Settings, AlertTriangle, CheckCircle2, Battery, RefreshCcw } from 'lucide-react';
 import { useQuiz } from '../context/QuizContext';
 
 const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
     const [activeDevices, setActiveDevices] = useState({});
+    const [showTroubleshooting, setShowTroubleshooting] = useState(false);
     const { participants } = useQuiz();
 
     useEffect(() => {
@@ -64,57 +65,100 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
                         {serverNote && <div className="status-note">{serverNote}</div>}
                     </div>
 
-                    <section className="instructions-section">
-                        <div className="instruction-card">
-                            <Info size={20} className="text-blue" />
-                            <div>
-                                <h4>¿Cómo sincronizar los controles?</h4>
-                                <p>Para que los clickers se conecten, deben estar en el <strong>Canal 41</strong>.</p>
-                                <ol>
-                                    <li>Presiona el botón <strong>CH</strong> o <strong>Channel</strong> en el clicker.</li>
-                                    <li>Ingresa <strong>4</strong> y luego <strong>1</strong>.</li>
-                                    <li>Presiona <strong>CH</strong> o <strong>OK</strong> para confirmar.</li>
-                                </ol>
-                            </div>
+                    <div className="tester-layout">
+                        <div className="tester-main">
+                            {devicesList.length === 0 ? (
+                                <div className="empty-tester">
+                                    <div className="pulse-icon">
+                                        <Activity size={48} />
+                                    </div>
+                                    <h3>Esperando señales...</h3>
+                                    <p>Presiona cualquier botón en un clicker para verlo aquí.</p>
+                                </div>
+                            ) : (
+                                <div className="devices-grid">
+                                    {devicesList.map(([id, info]) => {
+                                        const participant = participants[id];
+                                        return (
+                                            <div key={id} className={`device-card ${info.lastPing ? 'ping' : ''}`}>
+                                                <div className="device-id-badge">
+                                                    <Hash size={14} /> {id}
+                                                </div>
+                                                <div className="device-info">
+                                                    <div className="participant-name">
+                                                        <User size={16} />
+                                                        <span>{participant?.name || 'Invitado'}</span>
+                                                    </div>
+                                                    <div className="last-key">
+                                                        <span className="key-label">Tecla:</span>
+                                                        <span className="key-value">{info.key}</span>
+                                                    </div>
+                                                    <div className="last-seen">
+                                                        <Clock size={14} />
+                                                        <span>{new Date(info.ts).toLocaleTimeString()}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    </section>
 
-                    {devicesList.length === 0 ? (
-                        <div className="empty-tester">
-                            <div className="pulse-icon">
-                                <Activity size={48} />
-                            </div>
-                            <h3>Esperando señales...</h3>
-                            <p>Presiona cualquier botón en un clicker para verlo aquí.</p>
-                        </div>
-                    ) : (
-                        <div className="devices-grid">
-                            {devicesList.map(([id, info]) => {
-                                const participant = participants[id];
-                                return (
-                                    <div key={id} className={`device-card ${info.lastPing ? 'ping' : ''}`}>
-                                        <div className="device-id-badge">
-                                            <Hash size={14} /> {id}
-                                        </div>
-                                        <div className="device-info">
-                                            <div className="participant-name">
-                                                <User size={16} />
-                                                <span>{participant?.name || 'Invitado'}</span>
-                                            </div>
-                                            <div className="last-key">
-                                                <span className="key-label">Tecla:</span>
-                                                <span className="key-value">{info.key}</span>
-                                            </div>
-                                            <div className="last-seen">
-                                                <Clock size={14} />
-                                                <span>{new Date(info.ts).toLocaleTimeString()}</span>
-                                            </div>
+                        <aside className="tester-sidebar">
+                            <section className="guide-section">
+                                <h3><RefreshCcw size={18} /> Sincronización</h3>
+                                <div className="guide-steps">
+                                    <div className="step">
+                                        <div className="step-num">1</div>
+                                        <div className="step-text">
+                                            <strong>Presiona CH</strong> (o Channel) en el clicker. La luz debe parpadear <strong>Amarillo/Ámbar</strong>.
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                                    <div className="step">
+                                        <div className="step-num">2</div>
+                                        <div className="step-text">
+                                            Ingresa <strong>4</strong> y luego <strong>1</strong> (Canal 41).
+                                        </div>
+                                    </div>
+                                    <div className="step">
+                                        <div className="step-num">3</div>
+                                        <div className="step-text">
+                                            Presiona <strong>CH</strong> (o OK) para confirmar. La luz debe parpadear <strong>Verde</strong>.
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="led-section">
+                                <h3><Info size={18} /> Señales LED</h3>
+                                <ul className="led-list">
+                                    <li><span className="led-dot green"></span> <strong>Verde:</strong> Sincronización exitosa / Voto recibido.</li>
+                                    <li><span className="led-dot red"></span> <strong>Rojo:</strong> No se pudo conectar. Reintenta.</li>
+                                    <li><span className="led-dot amber"></span> <strong>Ámbar:</strong> En proceso de cambio de canal.</li>
+                                </ul>
+                            </section>
+
+                            <button
+                                className={`btn-tp ${showTroubleshooting ? 'active' : ''}`}
+                                onClick={() => setShowTroubleshooting(!showTroubleshooting)}
+                            >
+                                <AlertTriangle size={18} /> ¿Sigues con problemas?
+                            </button>
+
+                            {showTroubleshooting && (
+                                <div className="troubleshooting-box">
+                                    <h4>Soluciones comunes:</h4>
+                                    <ul>
+                                        <li><strong>Baterías:</strong> Si el LED es débil o no enciende, cambia las pilas AAA.</li>
+                                        <li><strong>Alcance:</strong> Asegúrate de estar a menos de 15 metros del receptor.</li>
+                                        <li><strong>Interferencia:</strong> Aleja el receptor de routers Wi-Fi o microondas.</li>
+                                        <li><strong>Re-conectar:</strong> Desconecta y vuelve a conectar el receptor USB.</li>
+                                    </ul>
+                                </div>
+                            )}
+                        </aside>
+                    </div>
                 </div>
 
                 <footer className="tester-footer">
@@ -122,6 +166,7 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
                         Limpiar lista
                     </button>
                     <div className="device-count">
+                        <CheckCircle2 size={16} className="text-green" />
                         <strong>{devicesList.length}</strong> dispositivos detectados
                     </div>
                 </footer>
