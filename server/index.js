@@ -45,7 +45,7 @@ let stopSim = null;
 
 // Session State (Source of Truth)
 let sessionState = {
-  status: "STOPPED", // RUNNING | PAUSED | STOPPED
+  status: "STOPPED", // RUNNING | PAUSED | STOPPED | TESTING
   votesById: new Map(), // id -> key
   lastVoteTs: null
 };
@@ -67,7 +67,13 @@ function emitStatus(extra = {}) {
 }
 
 function acceptVote(vote) {
-  if (sessionState.status !== "RUNNING") return;
+  if (sessionState.status !== "RUNNING" && sessionState.status !== "TESTING") return;
+
+  if (sessionState.status === "TESTING") {
+    // In testing mode, we just broadcast, we don't store.
+    io.emit("vote", { ...vote, isUpdate: false });
+    return;
+  }
 
   const prev = sessionState.votesById.get(vote.id);
   sessionState.votesById.set(vote.id, vote.key);
@@ -109,6 +115,12 @@ app.post("/session/reset", (req, res) => {
   sessionState.votesById.clear();
   sessionState.lastVoteTs = null;
   sessionState.status = "STOPPED";
+  emitStatus();
+  res.json({ ok: true });
+});
+
+app.post("/session/test", (req, res) => {
+  sessionState.status = "TESTING";
   emitStatus();
   res.json({ ok: true });
 });

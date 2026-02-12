@@ -754,7 +754,7 @@ body {
   color: #b6c8e8;
 }
 
-.response-stats > div {
+.response-stats>div {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(176, 199, 255, 0.13);
   border-radius: 0.6rem;
@@ -771,7 +771,7 @@ body {
   color: #cfddf8;
 }
 
-.quick-guide-card li + li {
+.quick-guide-card li+li {
   margin-top: 0.3rem;
 }
 
@@ -800,7 +800,223 @@ body {
   background: rgba(146, 169, 218, 0.65);
 }
 
+/* Control Tester Diagnostic */
+.control-tester-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 18, 0.85);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.control-tester-modal {
+  background: linear-gradient(165deg, #0f172a 0%, #070b16 100%);
+  width: 100%;
+  max-width: 900px;
+  height: 80vh;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tester-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tester-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tester-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.tester-title p {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.tester-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.empty-tester {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.pulse-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  animation: tester-pulse 2s infinite ease-in-out;
+}
+
+@keyframes tester-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.device-card {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.device-card.ping {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.device-id-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.device-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.participant-name {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.last-key {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.key-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.key-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #3b82f6;
+}
+
+.last-seen {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.tester-footer {
+  padding: 1.25rem 2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.device-count {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .control-tester-modal {
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .devices-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 @media (max-width: 1024px) {
+
   .input-row,
   .input-row-3,
   .response-stats {

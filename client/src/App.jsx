@@ -11,12 +11,14 @@ import {
   Download,
   CloudOff,
   CheckCircle2,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Activity
 } from 'lucide-react';
 import { QuizProvider, useQuiz } from './context/QuizContext';
 import QuizManager from './components/QuizManager';
 import PresentationView from './components/PresentationView';
 import ParticipantManager from './components/ParticipantManager';
+import ControlTester from './components/ControlTester';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 const socket = io(SOCKET_URL, {
@@ -45,6 +47,7 @@ function Dashboard() {
   const [serverNote, setServerNote] = useState('Conectando al servidor...');
   const [votes, setVotes] = useState({});
   const [voteLog, setVoteLog] = useState({});
+  const [showTester, setShowTester] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
@@ -126,6 +129,9 @@ function Dashboard() {
 
   const sendCommand = async (endpoint) => {
     try {
+      if (endpoint === 'test') {
+        setShowTester(true);
+      }
       await fetch(`${SOCKET_URL}/session/${endpoint}`, { method: 'POST' });
       if (endpoint === 'reset') {
         setVotes({});
@@ -245,6 +251,9 @@ function Dashboard() {
             {connected ? <Wifi size={16} /> : <WifiOff size={16} />}
             <span>{connected ? 'Servidor conectado' : 'Servidor desconectado'}</span>
           </div>
+          <button className="btn btn-secondary" onClick={() => sendCommand('test')}>
+            <Activity size={18} /> Probar Controles
+          </button>
         </div>
       </header>
 
@@ -335,6 +344,16 @@ function Dashboard() {
           <ParticipantManager />
         </div>
       </main>
+
+      {showTester && (
+        <ControlTester
+          socket={socket}
+          onClose={() => {
+            setShowTester(false);
+            sendCommand('reset');
+          }}
+        />
+      )}
     </div>
   );
 }
