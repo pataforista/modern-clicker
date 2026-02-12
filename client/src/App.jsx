@@ -44,6 +44,7 @@ const downloadCsv = (filename, rows) => {
 function Dashboard() {
   const [connected, setConnected] = useState(false);
   const [sessionStatus, setSessionStatus] = useState({ status: 'STOPPED', votes: 0 });
+  const [serialStatus, setSerialStatus] = useState({ mode: 'unknown', connected: false });
   const [serverNote, setServerNote] = useState('Conectando al servidor...');
   const [votes, setVotes] = useState({});
   const [voteLog, setVoteLog] = useState({});
@@ -67,6 +68,11 @@ function Dashboard() {
     socket.on('status', (data) => {
       if (data.note) setServerNote(data.note);
       if (data.session) setSessionStatus(data.session);
+      setSerialStatus({
+        mode: data.mode,
+        connected: data.connected,
+        lastError: data.lastError
+      });
     });
 
     socket.on('vote', (data) => {
@@ -348,6 +354,8 @@ function Dashboard() {
       {showTester && (
         <ControlTester
           socket={socket}
+          serialStatus={serialStatus}
+          serverNote={serverNote}
           onClose={() => {
             setShowTester(false);
             sendCommand('reset');

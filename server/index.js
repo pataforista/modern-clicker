@@ -27,7 +27,7 @@ const VoteSchema = z.object({
   key: v.key,
   ts: Date.now(),
   source: "serial"
-})).refine(v => /^[A-E]$/.test(v.key), { message: "key must be A-E" })
+})).refine(v => /^[A-J?]$/.test(v.key), { message: "key must be A-J or ?" })
   .refine(v => v.id.length > 0 && v.id.length <= 32, { message: "id invalid length" });
 
 const app = express();

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Activity, User, Hash, Clock } from 'lucide-react';
+import { X, Activity, User, Hash, Clock, Info, Wifi, WifiOff, Settings } from 'lucide-react';
 import { useQuiz } from '../context/QuizContext';
 
-const ControlTester = ({ socket, onClose }) => {
+const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
     const [activeDevices, setActiveDevices] = useState({});
     const { participants } = useQuiz();
 
@@ -43,7 +43,7 @@ const ControlTester = ({ socket, onClose }) => {
                         <Activity className="text-blue" size={24} />
                         <div>
                             <h2>Diagnóstico de Controles</h2>
-                            <p>Presiona cualquier botón en los clickers para verificar conexión</p>
+                            <p>Verifica la conexión y sincronización de los dispositivos</p>
                         </div>
                     </div>
                     <button className="btn-close" onClick={onClose}>
@@ -52,13 +52,40 @@ const ControlTester = ({ socket, onClose }) => {
                 </header>
 
                 <div className="tester-content">
+                    <div className="tester-status-bar">
+                        <div className={`status-pill ${serialStatus?.connected ? 'success' : 'danger'}`}>
+                            {serialStatus?.connected ? <Wifi size={16} /> : <WifiOff size={16} />}
+                            <span>Hardware: {serialStatus?.connected ? 'CONECTADO' : 'DESCONECTADO'}</span>
+                        </div>
+                        <div className="status-pill info">
+                            <Settings size={16} />
+                            <span>Modo: {serialStatus?.mode?.toUpperCase() || 'DESCONOCIDO'}</span>
+                        </div>
+                        {serverNote && <div className="status-note">{serverNote}</div>}
+                    </div>
+
+                    <section className="instructions-section">
+                        <div className="instruction-card">
+                            <Info size={20} className="text-blue" />
+                            <div>
+                                <h4>¿Cómo sincronizar los controles?</h4>
+                                <p>Para que los clickers se conecten, deben estar en el <strong>Canal 41</strong>.</p>
+                                <ol>
+                                    <li>Presiona el botón <strong>CH</strong> o <strong>Channel</strong> en el clicker.</li>
+                                    <li>Ingresa <strong>4</strong> y luego <strong>1</strong>.</li>
+                                    <li>Presiona <strong>CH</strong> o <strong>OK</strong> para confirmar.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </section>
+
                     {devicesList.length === 0 ? (
                         <div className="empty-tester">
                             <div className="pulse-icon">
                                 <Activity size={48} />
                             </div>
                             <h3>Esperando señales...</h3>
-                            <p>Los dispositivos aparecerán aquí cuando detecten una pulsación.</p>
+                            <p>Presiona cualquier botón en un clicker para verlo aquí.</p>
                         </div>
                     ) : (
                         <div className="devices-grid">
