@@ -44,14 +44,14 @@ void setup() {
   // CRC Length: 16-bit
   radio.setCRCLength(RF24_CRC_16);
   
-  // Auto-Ack: Disabled (Receiver only)
-  radio.setAutoAck(false);
+  // Auto-Ack: Enabled (Needed for clickers to "lock" to this channel)
+  radio.setAutoAck(true);
   
   // Dynamic Payload: Enabled
   radio.enableDynamicPayloads();
   
-  // Address Width: 5 Bytes (Default, but good to be explicit if library supports it easily)
-  radio.setAddressWidth(5);
+  // Address Width: 3 Bytes (Standard for TurningPoint protocol)
+  radio.setAddressWidth(3);
   
   // Open Reading Pipe
   radio.openReadingPipe(1, pipeAddress);
@@ -59,7 +59,7 @@ void setup() {
   radio.startListening();
   
   // Debug info
-  Serial.println("{\"status\": \"started\", \"mode\": \"sniffer\", \"channel\": 41}");
+  Serial.println("{\"status\": \"started\", \"mode\": \"base\", \"channel\": 41, \"addr\": \"123456\"}");
 }
 
 // --- 4. DECODING ALGORITHM (The Secret Sauce) ---

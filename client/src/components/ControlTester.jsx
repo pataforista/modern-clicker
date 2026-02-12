@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Activity, User, Hash, Clock, Info, Wifi, WifiOff, Settings, AlertTriangle, CheckCircle2, Battery, RefreshCcw } from 'lucide-react';
+import { X, Activity, User, Hash, Clock, Info, Wifi, WifiOff, Settings, AlertTriangle, CheckCircle2, RefreshCcw, Cpu } from 'lucide-react';
 import { useQuiz } from '../context/QuizContext';
 
 const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
@@ -44,7 +44,7 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
                         <Activity className="text-blue" size={24} />
                         <div>
                             <h2>Diagnóstico de Controles</h2>
-                            <p>Verifica la conexión y sincronización de los dispositivos</p>
+                            <p>Estado del sistema y guía de sincronización</p>
                         </div>
                     </div>
                     <button className="btn-close" onClick={onClose}>
@@ -65,6 +65,13 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
                         {serverNote && <div className="status-note">{serverNote}</div>}
                     </div>
 
+                    <div className="alert-box-critical">
+                        <Cpu size={20} />
+                        <div>
+                            <strong>¡Acción Necesaria!:</strong> He corregido el código del Arduino. Por favor, <strong>sube de nuevo el archivo `firmware/receiver.ino`</strong> a tu placa para que los controles puedan sincronizarse correctamente.
+                        </div>
+                    </div>
+
                     <div className="tester-layout">
                         <div className="tester-main">
                             {devicesList.length === 0 ? (
@@ -73,7 +80,7 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
                                         <Activity size={48} />
                                     </div>
                                     <h3>Esperando señales...</h3>
-                                    <p>Presiona cualquier botón en un clicker para verlo aquí.</p>
+                                    <p>Realiza la secuencia de sincronización en tus clickers.</p>
                                 </div>
                             ) : (
                                 <div className="devices-grid">
@@ -107,35 +114,35 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
 
                         <aside className="tester-sidebar">
                             <section className="guide-section">
-                                <h3><RefreshCcw size={18} /> Sincronización</h3>
+                                <h3><RefreshCcw size={18} /> Sincronización (Canal 41)</h3>
                                 <div className="guide-steps">
                                     <div className="step">
                                         <div className="step-num">1</div>
                                         <div className="step-text">
-                                            <strong>Presiona CH</strong> (o Channel) en el clicker. La luz debe parpadear <strong>Amarillo/Ámbar</strong>.
+                                            Presiona <strong>CH</strong>. El LED parpadeará <strong>Rojo/Verde</strong> (Modo edición).
                                         </div>
                                     </div>
                                     <div className="step">
                                         <div className="step-num">2</div>
                                         <div className="step-text">
-                                            Ingresa <strong>4</strong> y luego <strong>1</strong> (Canal 41).
+                                            Ingresa <strong>4</strong> y luego <strong>1</strong>.
                                         </div>
                                     </div>
                                     <div className="step">
                                         <div className="step-num">3</div>
                                         <div className="step-text">
-                                            Presiona <strong>CH</strong> (o OK) para confirmar. La luz debe parpadear <strong>Verde</strong>.
+                                            Presiona <strong>CH</strong> otra vez. Debe parpadear <strong>Verde</strong> (Éxito).
                                         </div>
                                     </div>
                                 </div>
                             </section>
 
                             <section className="led-section">
-                                <h3><Info size={18} /> Señales LED</h3>
+                                <h3><Info size={18} /> Diagnóstico LED</h3>
                                 <ul className="led-list">
-                                    <li><span className="led-dot green"></span> <strong>Verde:</strong> Sincronización exitosa / Voto recibido.</li>
-                                    <li><span className="led-dot red"></span> <strong>Rojo:</strong> No se pudo conectar. Reintenta.</li>
-                                    <li><span className="led-dot amber"></span> <strong>Ámbar:</strong> En proceso de cambio de canal.</li>
+                                    <li><span className="led-dot green"></span> <strong>Verde:</strong> Conectado y listo.</li>
+                                    <li><span className="led-dot double"></span> <strong>Rojo/Verde:</strong> Ingresando canal...</li>
+                                    <li><span className="led-dot red"></span> <strong>Rojo:</strong> Error (Sube el firmware nuevo).</li>
                                 </ul>
                             </section>
 
@@ -143,17 +150,15 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
                                 className={`btn-tp ${showTroubleshooting ? 'active' : ''}`}
                                 onClick={() => setShowTroubleshooting(!showTroubleshooting)}
                             >
-                                <AlertTriangle size={18} /> ¿Sigues con problemas?
+                                <AlertTriangle size={18} /> Ayuda Técnica
                             </button>
 
                             {showTroubleshooting && (
                                 <div className="troubleshooting-box">
-                                    <h4>Soluciones comunes:</h4>
                                     <ul>
-                                        <li><strong>Baterías:</strong> Si el LED es débil o no enciende, cambia las pilas AAA.</li>
-                                        <li><strong>Alcance:</strong> Asegúrate de estar a menos de 15 metros del receptor.</li>
-                                        <li><strong>Interferencia:</strong> Aleja el receptor de routers Wi-Fi o microondas.</li>
-                                        <li><strong>Re-conectar:</strong> Desconecta y vuelve a conectar el receptor USB.</li>
+                                        <li>Prueba con el canal <strong>01</strong> si el 41 falla.</li>
+                                        <li>Usa un puerto USB 2.0 si el 3.0 falla.</li>
+                                        <li>Mantén el clicker a 2 metros del receptor al sincronizar.</li>
                                     </ul>
                                 </div>
                             )}

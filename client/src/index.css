@@ -1021,6 +1021,25 @@ body {
   }
 }
 
+.alert-box-critical {
+  background: rgba(255, 93, 115, 0.15);
+  border: 1px solid #ff5d73;
+  color: #ff5d73;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 2rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.led-dot.double {
+  background: linear-gradient(90deg, #ef4444 50%, #10b981 50%);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
 @media (max-width: 900px) {
   .tester-layout {
     grid-template-columns: 1fr;
