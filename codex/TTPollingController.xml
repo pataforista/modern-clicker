@@ -1,0 +1,57 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+TTPollingController
+</name>
+</assembly>
+<members>
+<member name="T:TTPollingController.My.Resources.Localization">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:TTPollingController.My.Resources.Localization.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:TTPollingController.My.Resources.Localization.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:TTPollingController.My.Resources.Localization.QuestionPollingClosedEvent">
+<summary>
+  Looks up a localized string similar to Question {1} polling closed.
+</summary>
+</member>
+<member name="P:TTPollingController.My.Resources.Localization.QuestionPollingOpenEvent">
+<summary>
+  Looks up a localized string similar to Question {1} polling opened.
+</summary>
+</member>
+<member name="P:TTPollingController.My.Resources.Localization.RWWDisconnectMsg">
+<summary>
+  Looks up a localized string similar to The connection for mobile responses has been lost..
+</summary>
+</member>
+<member name="T:TTPollingController.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:TTPollingController.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:TTPollingController.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+</members>
+</doc>

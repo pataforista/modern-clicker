@@ -73,6 +73,18 @@ export default function ParticipantManager() {
     const [bulkText, setBulkText] = useState('');
     const [search, setSearch] = useState('');
 
+    useEffect(() => {
+        const handler = (e) => {
+            const { id } = e.detail;
+            setIdInput(id);
+            // Optionally focus the name input
+            const nameEl = document.querySelector('input[placeholder="Ej: Juan Pérez"]');
+            if (nameEl) nameEl.focus();
+        };
+        window.addEventListener('focus-registration', handler);
+        return () => window.removeEventListener('focus-registration', handler);
+    }, []);
+
     const participantList = useMemo(
         () =>
             Object.entries(participants)

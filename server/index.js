@@ -42,12 +42,15 @@ const io = new SocketIOServer(server, {
 // State
 let serialState = { mode: env.SIMULATOR ? "simulator" : "serial", connected: false, lastError: null };
 let stopSim = null;
+let currentPort = null;
 
 // Session State (Source of Truth)
 let sessionState = {
   status: "STOPPED", // RUNNING | PAUSED | STOPPED | TESTING
   votesById: new Map(), // id -> key
-  lastVoteTs: null
+  lastVoteTs: null,
+  participants: {}, // id -> {id, name, number}
+  questions: []    // list of {id, text, options, correctAnswer}
 };
 
 // --- Helpers ---
@@ -59,7 +62,9 @@ function emitStatus(extra = {}) {
     session: {
       status: sessionState.status,
       votes: sessionState.votesById.size,
-      lastVoteTs: sessionState.lastVoteTs
+      lastVoteTs: sessionState.lastVoteTs,
+      participants: sessionState.participants,
+      questions: sessionState.questions
     },
     ...extra
   };
@@ -125,6 +130,57 @@ app.post("/session/test", (req, res) => {
   res.json({ ok: true });
 });
 
+app.post("/vote/mobile", (req, res) => {
+  const { id, key, name } = req.body;
+  if (!id || !key) return res.status(400).json({ error: "Missing id or key" });
+
+  // If a name is provided, automatically add to participants list if not exists
+  if (name && !sessionState.participants[id]) {
+    sessionState.participants[id] = { id, name, number: 'WEB' };
+  }
+
+  const vote = {
+    id: String(id),
+    key: String(key).toUpperCase(),
+    ts: Date.now(),
+    source: "mobile"
+  };
+
+  acceptVote(vote);
+  res.json({ ok: true });
+});
+
+app.post("/sync/participants", (req, res) => {
+  sessionState.participants = req.body.participants || {};
+  emitStatus({ note: "Participantes sincronizados" });
+  res.json({ ok: true });
+});
+
+app.post("/sync/questions", (req, res) => {
+  sessionState.questions = req.body.questions || [];
+  emitStatus({ note: "Preguntas sincronizadas" });
+  res.json({ ok: true });
+});
+
+app.post("/hw/scan", (req, res) => {
+  if (serialState.connected && currentPort) {
+    currentPort.write("SCAN\n");
+    res.json({ ok: true });
+  } else {
+    res.status(400).json({ error: "Serial not connected" });
+  }
+});
+
+app.post("/hw/channel", (req, res) => {
+  const { channel } = req.body;
+  if (serialState.connected && currentPort) {
+    currentPort.write(`CH:${channel}\n`);
+    res.json({ ok: true });
+  } else {
+    res.status(400).json({ error: "Serial not connected" });
+  }
+});
+
 // --- Socket.IO ---
 
 io.on("connection", (socket) => {
@@ -136,7 +192,9 @@ io.on("connection", (socket) => {
     session: {
       status: sessionState.status,
       votes: sessionState.votesById.size,
-      lastVoteTs: sessionState.lastVoteTs
+      lastVoteTs: sessionState.lastVoteTs,
+      participants: sessionState.participants,
+      questions: sessionState.questions
     }
   });
 
@@ -155,19 +213,18 @@ io.on("connection", (socket) => {
 
 function startSerialWithRetry() {
   let attempt = 0;
-  let port = null;
 
   const connect = () => {
     attempt += 1;
     serialState.mode = "serial";
 
-    port = new SerialPort({
+    currentPort = new SerialPort({
       path: env.SERIAL_PATH,
       baudRate: env.SERIAL_BAUD,
       autoOpen: false
     });
 
-    port.open((err) => {
+    currentPort.open((err) => {
       if (err) {
         serialState.connected = false;
         serialState.lastError = err.message;
@@ -206,7 +263,7 @@ function startSerialWithRetry() {
 
       emitStatus({ note: "serial connected" });
 
-      const parser = port.pipe(new ReadlineParser({ delimiter: "\n" }));
+      const parser = currentPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
       parser.on("data", (line) => {
         const trimmed = String(line).trim();
@@ -216,6 +273,17 @@ function startSerialWithRetry() {
         try {
           // Expecting JSON from Arduino: {"id": "...", "key": "..."}
           const obj = JSON.parse(trimmed);
+
+          if (obj.status === "scan_results") {
+            io.emit("scan_results", obj);
+            return;
+          }
+
+          if (obj.status === "channel_changed") {
+            emitStatus({ note: `Canal cambiado a ${obj.channel}` });
+            return;
+          }
+
           const parsed = VoteSchema.parse(obj);
           acceptVote(parsed);
         } catch (e) {
@@ -223,7 +291,7 @@ function startSerialWithRetry() {
         }
       });
 
-      port.on("close", () => {
+      currentPort.on("close", () => {
         console.log("Serial Port Closed");
         serialState.connected = false;
         serialState.lastError = "serial closed";
@@ -232,12 +300,12 @@ function startSerialWithRetry() {
         setTimeout(connect, backoffMs);
       });
 
-      port.on("error", (e) => {
+      currentPort.on("error", (e) => {
         console.error("Serial Port Error:", e.message);
         serialState.connected = false;
         serialState.lastError = e.message;
         emitStatus({ note: "serial error" });
-        try { port.close(); } catch { }
+        try { currentPort.close(); } catch { }
       });
     });
   };

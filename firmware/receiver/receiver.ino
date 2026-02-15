@@ -117,12 +117,43 @@ void processPacket(uint8_t* data, uint8_t len) {
 }
 
 void loop() {
+  // --- 1. HANDLE COMMANDS FROM PC ---
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n');
+    if (input.startsWith("CH:")) {
+      int newChannel = input.substring(3).toInt();
+      if (newChannel >= 0 && newChannel <= 125) {
+        radio.setChannel(newChannel);
+        Serial.print("{\"status\": \"channel_changed\", \"channel\": ");
+        Serial.print(newChannel);
+        Serial.println("}");
+      }
+    } else if (input == "SCAN") {
+      // Simple Noise Scanner
+      radio.stopListening();
+      Serial.print("{\"status\": \"scan_results\", \"noise\": [");
+      for (int i = 0; i < 126; i++) {
+        radio.setChannel(i);
+        delay(2);
+        int count = 0;
+        for (int j = 0; j < 10; j++) {
+           if (radio.testCarrier()) count++;
+        }
+        Serial.print(count);
+        if (i < 125) Serial.print(",");
+      }
+      Serial.println("]}");
+      radio.setChannel(41); // Return to default
+      radio.startListening();
+    }
+  }
+
+  // --- 2. RECEIVE PACKETS ---
   if (radio.available()) {
     uint8_t len = radio.getDynamicPayloadSize();
     
     // Safety check size (Specs say useful payload is 7-12 bytes)
     if (len < 4 || len > 32) {
-      // Flush invalid
       uint8_t dump[32];
       radio.read(&dump, len);
       return;

@@ -5,6 +5,9 @@ import { useQuiz } from '../context/QuizContext';
 const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
     const [activeDevices, setActiveDevices] = useState({});
     const [showTroubleshooting, setShowTroubleshooting] = useState(false);
+    const [scanning, setScanning] = useState(false);
+    const [scanData, setScanData] = useState(null);
+    const [currentChannel, setCurrentChannel] = useState(41);
     const { participants } = useQuiz();
 
     useEffect(() => {
@@ -18,7 +21,6 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
                 }
             }));
 
-            // Reset ping effect after 500ms
             setTimeout(() => {
                 setActiveDevices((prev) => {
                     if (!prev[data.id]) return prev;
@@ -30,9 +32,33 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
             }, 500);
         };
 
+        const handleScanResults = (data) => {
+            setScanData(data.noise);
+            setScanning(false);
+        };
+
         socket.on('vote', handleVote);
-        return () => socket.off('vote', handleVote);
+        socket.on('scan_results', handleScanResults);
+        return () => {
+            socket.off('vote', handleVote);
+            socket.off('scan_results', handleScanResults);
+        };
     }, [socket]);
+
+    const runScan = () => {
+        setScanning(true);
+        setScanData(null);
+        fetch(`${socket.io.uri}/hw/scan`, { method: 'POST' });
+    };
+
+    const changeChannel = (ch) => {
+        setCurrentChannel(ch);
+        fetch(`${socket.io.uri}/hw/channel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ channel: ch })
+        });
+    };
 
     const devicesList = Object.entries(activeDevices).sort((a, b) => b[1].ts - a[1].ts);
 
@@ -95,6 +121,19 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
                                                     <div className="participant-name">
                                                         <User size={16} />
                                                         <span>{participant?.name || 'Invitado'}</span>
+                                                        {!participant && (
+                                                            <button
+                                                                className="btn-link-sm"
+                                                                onClick={() => {
+                                                                    // We'll close the tester and focus registration
+                                                                    onClose();
+                                                                    // Focus the participant form with this ID
+                                                                    window.dispatchEvent(new CustomEvent('focus-registration', { detail: { id } }));
+                                                                }}
+                                                            >
+                                                                Vincular
+                                                            </button>
+                                                        )}
                                                     </div>
                                                     <div className="last-key">
                                                         <span className="key-label">Tecla:</span>
@@ -114,26 +153,70 @@ const ControlTester = ({ socket, serialStatus, serverNote, onClose }) => {
 
                         <aside className="tester-sidebar">
                             <section className="guide-section">
-                                <h3><RefreshCcw size={18} /> Sincronización (Canal 41)</h3>
+                                <h3><RefreshCcw size={18} /> Sincronización (Canal {currentChannel})</h3>
+                                <div className="channel-selector">
+                                    <label>Cambiar Canal Base:</label>
+                                    <div className="channel-btns">
+                                        {[41, 1, 10, 80].map(ch => (
+                                            <button
+                                                key={ch}
+                                                className={`ch-btn ${currentChannel === ch ? 'active' : ''}`}
+                                                onClick={() => changeChannel(ch)}
+                                            >
+                                                {ch.toString().padStart(2, '0')}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                                 <div className="guide-steps">
                                     <div className="step">
                                         <div className="step-num">1</div>
                                         <div className="step-text">
-                                            Presiona <strong>CH</strong>. El LED parpadeará <strong>Rojo/Verde</strong> (Modo edición).
+                                            Presiona <strong>CH</strong>. El LED parpadeará <strong>Rojo/Verde</strong>.
                                         </div>
                                     </div>
                                     <div className="step">
                                         <div className="step-num">2</div>
                                         <div className="step-text">
-                                            Ingresa <strong>4</strong> y luego <strong>1</strong>.
+                                            Ingresa <strong>{currentChannel.toString().split('').join(' y ')}</strong>.
                                         </div>
                                     </div>
                                     <div className="step">
                                         <div className="step-num">3</div>
                                         <div className="step-text">
-                                            Presiona <strong>CH</strong> otra vez. Debe parpadear <strong>Verde</strong> (Éxito).
+                                            Presiona <strong>CH</strong> otra vez. Debe parpadear <strong>Verde</strong>.
                                         </div>
                                     </div>
+                                </div>
+                            </section>
+
+                            <section className="scan-section">
+                                <h3><Cpu size={18} /> Escáner de Frecuencia</h3>
+                                <div className="scan-container">
+                                    {scanning ? (
+                                        <div className="scanning-loader">
+                                            <div className="spinner"></div>
+                                            <span>Escaneando ambiente...</span>
+                                        </div>
+                                    ) : scanData ? (
+                                        <div className="scan-results">
+                                            <div className="mini-chart">
+                                                {scanData.map((v, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className="chart-bar"
+                                                        style={{ height: `${(v / 10) * 100}%`, background: v > 5 ? 'var(--danger-color)' : 'var(--success-color)' }}
+                                                        title={`Ch ${i}: ${v}/10 interferencia`}
+                                                    ></div>
+                                                ))}
+                                            </div>
+                                            <p className="scan-note">Las barras rojas indican interferencia WiFi.</p>
+                                        </div>
+                                    ) : (
+                                        <button className="btn btn-secondary btn-sm w-full" onClick={runScan}>
+                                            <Activity size={14} /> Iniciar análisis de señal
+                                        </button>
+                                    )}
                                 </div>
                             </section>
 

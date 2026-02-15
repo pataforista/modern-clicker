@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<scheme ttxmlversion="1.1">
+    <import/>
+    <export isincluded="True">
+        <guid>96BC252094844591B3806F51D096870B</guid>
+        <delimiter>,</delimiter>
+        <qualifier isoptional="True">"</qualifier>
+        <extension>csv</extension>
+        <headercolumns>
+            <column type="200" value="Device ID"/>
+            <column type="200" value="Last Name"/>
+            <column type="200" value="First Name"/>
+            <column type="200" value="User ID"/>
+            <column type="500" value=""/>
+            <column type="200" value="Total Points Possible"/>
+            <column type="200" value="Percentage"/>
+            <column type="200" value="Performance Scale"/>
+        </headercolumns>
+        <columns>
+            <column type="100" value="2"/>
+            <column type="100" value="4"/>
+            <column type="100" value="3"/>
+            <column type="100" value="5"/>
+            <column type="300" value=""/>
+            <column type="400" value=""/>
+            <column type="302" value="%"/>
+            <column type="303" value=""/>
+        </columns>
+    </export>
+</scheme>

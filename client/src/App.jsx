@@ -12,13 +12,18 @@ import {
   CloudOff,
   CheckCircle2,
   FileSpreadsheet,
-  Activity
+  Activity,
+  FileText,
+  XCircle
 } from 'lucide-react';
 import { QuizProvider, useQuiz } from './context/QuizContext';
 import QuizManager from './components/QuizManager';
 import PresentationView from './components/PresentationView';
 import ParticipantManager from './components/ParticipantManager';
 import ControlTester from './components/ControlTester';
+import ModernReport from './components/ModernReport';
+import MobileVote from './components/MobileVote';
+import { QrCode } from 'lucide-react';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 const socket = io(SOCKET_URL, {
@@ -49,10 +54,29 @@ function Dashboard() {
   const [votes, setVotes] = useState({});
   const [voteLog, setVoteLog] = useState({});
   const [showTester, setShowTester] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [showQr, setShowQr] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [pendingIds, setPendingIds] = useState([]);
+  const [isMobileView, setIsMobileView] = useState(window.location.hash === '#/vote' || window.location.pathname === '/vote');
 
-  const { presentationMode, setPresentationMode, currentQuestion, setLastVoteId, participants } = useQuiz();
+  useEffect(() => {
+    const handleHash = () => setIsMobileView(window.location.hash === '#/vote');
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  const {
+    presentationMode,
+    setPresentationMode,
+    currentQuestion,
+    setLastVoteId,
+    participants,
+    setParticipants,
+    setQuestions,
+    questions
+  } = useQuiz();
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -67,7 +91,14 @@ function Dashboard() {
 
     socket.on('status', (data) => {
       if (data.note) setServerNote(data.note);
-      if (data.session) setSessionStatus(data.session);
+      if (data.session) {
+        setSessionStatus(data.session);
+        // Sync context if server has data
+        if (data.session.participants) setParticipants(data.session.participants);
+        if (data.session.questions && data.session.questions.length > 0) {
+          setQuestions(data.session.questions);
+        }
+      }
       setSerialStatus({
         mode: data.mode,
         connected: data.connected,
@@ -88,6 +119,14 @@ function Dashboard() {
         }
       }));
       setLastVoteId(data.id);
+
+      // Track unknown IDs for quick pairing
+      if (!participants[data.id]) {
+        setPendingIds(prev => {
+          if (prev.includes(data.id)) return prev;
+          return [data.id, ...prev].slice(0, 5); // Keep last 5 unknown
+        });
+      }
     });
 
     socket.on('snapshot', (allVotes) => {
@@ -214,6 +253,10 @@ function Dashboard() {
   const totalVotes = Object.keys(votes).length;
   const isSessionRunning = sessionStatus.status === 'RUNNING';
 
+  if (isMobileView) {
+    return <MobileVote />;
+  }
+
   if (presentationMode) {
     return (
       <PresentationView>
@@ -245,23 +288,43 @@ function Dashboard() {
           <p className="brand-subtitle">Panel simple para docentes y facilitadores</p>
         </div>
         <div className="header-actions">
-          <button className="btn btn-secondary" onClick={() => setPresentationMode(true)}>
+          <button className="btn btn-primary" onClick={() => setPresentationMode(true)}>
             <Presentation size={18} /> Proyectar
           </button>
-          {deferredPrompt && (
-            <button className="btn btn-secondary" onClick={installApp}>
-              <Download size={18} /> Instalar app
-            </button>
-          )}
+          <button className="btn btn-secondary" onClick={() => setShowQr(true)}>
+            <QrCode size={18} /> Móvil
+          </button>
+          <button className="btn btn-secondary" onClick={() => setShowReport(true)}>
+            <FileText size={18} /> Reporte
+          </button>
+          <button className="btn btn-secondary" onClick={() => sendCommand('test')}>
+            <Activity size={18} /> Diagnóstico
+          </button>
           <div className={`status-badge ${connected ? 'online' : 'offline'}`}>
             {connected ? <Wifi size={16} /> : <WifiOff size={16} />}
-            <span>{connected ? 'Servidor conectado' : 'Servidor desconectado'}</span>
+            <span>{serialStatus.mode === 'simulator' ? 'SIMULADOR' : (connected ? 'Hardware OK' : 'Hardware Off')}</span>
           </div>
-          <button className="btn btn-secondary" onClick={() => sendCommand('test')}>
-            <Activity size={18} /> Probar Controles
-          </button>
         </div>
       </header>
+
+      {pendingIds.length > 0 && !presentationMode && (
+        <div className="pending-ids-banner">
+          <div className="banner-content">
+            <Info size={18} className="text-blue" />
+            <span>Detectados <strong>{pendingIds.length}</strong> controles sin registrar: {pendingIds.join(', ')}</span>
+          </div>
+          <button
+            className="btn btn-primary btn-xs"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('focus-registration', { detail: { id: pendingIds[0] } }));
+              setPendingIds(prev => prev.slice(1));
+            }}
+          >
+            Vincular ahora
+          </button>
+          <button className="icon-btn-xs" onClick={() => setPendingIds([])}><X size={14} /></button>
+        </div>
+      )}
 
       <main className="dashboard-grid">
         <section className="card chart-card">
@@ -361,6 +424,42 @@ function Dashboard() {
             sendCommand('reset');
           }}
         />
+      )}
+      {showReport && (
+        <ModernReport
+          votes={votes}
+          participants={participants}
+          questions={questions}
+          onClose={() => setShowReport(false)}
+        />
+      )}
+      {showQr && (
+        <div className="report-overlay" onClick={() => setShowQr(false)}>
+          <div className="report-modal qr-modal" onClick={e => e.stopPropagation()}>
+            <header className="report-header">
+              <div className="title-group">
+                <QrCode className="text-blue" size={24} />
+                <h2>Acceso Voto Móvil</h2>
+              </div>
+              <button className="icon-btn" onClick={() => setShowQr(false)}><XCircle size={24} /></button>
+            </header>
+            <div className="qr-content">
+              <div className="qr-box">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + '#/vote')}`}
+                  alt="QR Code"
+                />
+              </div>
+              <div className="qr-instructions">
+                <h3>Escanea para votar</h3>
+                <p>Apunta con la cámara de tu celular para entrar a la sesión.</p>
+                <div className="url-copy">
+                  <code>{window.location.origin}/#/vote</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

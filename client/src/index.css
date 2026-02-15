@@ -1009,6 +1009,423 @@ body {
   color: var(--text-secondary);
 }
 
+/* Synchronization Facilitation */
+.pending-ids-banner {
+  background: rgba(95, 140, 255, 0.15);
+  border-bottom: 1px solid rgba(95, 140, 255, 0.3);
+  padding: 0.6rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  animation: slideDown 0.3s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #e0e9ff;
+  font-size: 0.9rem;
+  flex: 1;
+}
+
+.icon-btn-xs {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+}
+
+.btn-link-sm {
+  background: rgba(95, 140, 255, 0.2);
+  border: 1px solid rgba(95, 140, 255, 0.3);
+  color: #9ab9ff;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.35rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: 0.2s;
+}
+
+.btn-link-sm:hover {
+  background: rgba(95, 140, 255, 0.35);
+  color: white;
+}
+
+/* Hardware Controls & Scanner */
+.channel-selector {
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+}
+
+.channel-selector label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.channel-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+
+.ch-btn {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(176, 199, 255, 0.2);
+  color: var(--text-primary);
+  padding: 0.35rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  transition: 0.2s;
+}
+
+.ch-btn:hover {
+  background: rgba(176, 199, 255, 0.1);
+}
+
+.ch-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+  box-shadow: 0 0 12px rgba(95, 140, 255, 0.4);
+}
+
+.scan-container {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.scanning-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mini-chart {
+  display: grid;
+  grid-template-columns: repeat(126, 1fr);
+  gap: 0;
+  height: 40px;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px;
+  border-radius: 2px;
+}
+
+.chart-bar {
+  width: 100%;
+  border-radius: 1px 1px 0 0;
+  min-height: 1px;
+}
+
+.scan-note {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* Modern Report */
+.report-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 20, 0.85);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.report-modal {
+  background: linear-gradient(165deg, #0b1224 0%, #070b16 100%);
+  border: 1px solid rgba(176, 199, 255, 0.15);
+  border-radius: 1.5rem;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.report-header {
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(176, 199, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-val {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, #8fa4c8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.report-charts {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1.5rem;
+  padding: 0 2rem 2rem;
+}
+
+.chart-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.1rem;
+  border-radius: 1rem;
+}
+
+.chart-box h3 {
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.report-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Mobile Voting Interface */
+.mobile-app {
+  min-height: 100vh;
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-header {
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobile-header h1 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.mobile-main {
+  flex: 1;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mobile-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(176, 199, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.input-field label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-field input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(176, 199, 255, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: white;
+  font-size: 1rem;
+}
+
+.id-display {
+  font-family: 'Fira Code', monospace;
+  text-align: center;
+  letter-spacing: 2px;
+  color: var(--accent-color) !important;
+}
+
+.mobile-keys-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.75rem;
+}
+
+.mobile-key-btn {
+  height: 64px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(176, 199, 255, 0.15);
+  border-radius: 0.75rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.mobile-key-btn.active {
+  background: rgba(95, 140, 255, 0.1);
+  border-color: var(--accent-color);
+}
+
+.mobile-key-btn.success {
+  background: rgba(49, 208, 164, 0.2);
+  border-color: var(--success-color);
+  color: var(--success-color);
+}
+
+.mobile-error {
+  background: rgba(255, 93, 115, 0.15);
+  color: var(--danger-color);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.mobile-instruction {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* QR Modal */
+.qr-modal {
+  max-width: 450px !important;
+}
+
+.qr-content {
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  text-align: center;
+}
+
+.qr-box {
+  background: white;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 0 30px rgba(95, 140, 255, 0.2);
+}
+
+.qr-box img {
+  display: block;
+}
+
+.qr-instructions h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
+}
+
+.qr-instructions p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.url-copy {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px dashed rgba(176, 199, 255, 0.3);
+}
+
+.url-copy code {
+  color: var(--accent-color);
+  font-size: 0.9rem;
+}
+
 @keyframes slide-down {
   from {
     opacity: 0;

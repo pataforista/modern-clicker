@@ -1,0 +1,690 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+TTResponseSources
+</name>
+</assembly>
+<members>
+<member name="T:Turning.TTResponseSources.My.Resources.Localization">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Cancel">
+<summary>
+  Looks up a localized string similar to Cancel.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ChannelsX">
+<summary>
+  Looks up a localized string similar to Channels {1}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ChannelX">
+<summary>
+  Looks up a localized string similar to Channel {1}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Close">
+<summary>
+  Looks up a localized string similar to Close.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ConnectionErrorMessage">
+<summary>
+  Looks up a localized string similar to Unable to communicate with mobile responses..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ConnectionErrorTitle">
+<summary>
+  Looks up a localized string similar to Connection Error.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.DurationFormat">
+<summary>
+  Looks up a localized string similar to {1}:{2}:{3}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.FalseText">
+<summary>
+  Looks up a localized string similar to False.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ImageTextReplacement">
+<summary>
+  Looks up a localized string similar to (image).
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ImageUploadFailed">
+<summary>
+  Looks up a localized string similar to Unable to upload image to the server..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.InUseIdMessage">
+<summary>
+  Looks up a localized string similar to The session you are trying to reserve is in use, but not reserved. Please try reserving again later or reserving a different session ID..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.InUseIdTitle">
+<summary>
+  Looks up a localized string similar to Session ID In Use.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.InvalidApiAlertMessage">
+<summary>
+  Looks up a localized string similar to Update to the latest version of {1} to allow mobile responses..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.InvalidApiAlertTitle">
+<summary>
+  Looks up a localized string similar to {1} is Out of Date.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.InvalidCredentialsMessage">
+<summary>
+  Looks up a localized string similar to The email or password you entered is incorrect. Please try again..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.InvalidCredentialsTitle">
+<summary>
+  Looks up a localized string similar to Invalid Credentials.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.InvalidIdMessage">
+<summary>
+  Looks up a localized string similar to The session ID does not meet the requirements, 4-14 alphanumeric characters. Please try a different session ID..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.InvalidIdTitle">
+<summary>
+  Looks up a localized string similar to Invalid ID.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.IROnly">
+<summary>
+  Looks up a localized string similar to IR Receiver.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.LicenseExpireMessage">
+<summary>
+  Looks up a localized string similar to Your license will expire on {1}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.LicenseExpireTitle">
+<summary>
+  Looks up a localized string similar to License Expiration.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Milliseconds">
+<summary>
+  Looks up a localized string similar to {1} ms.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.None">
+<summary>
+  Looks up a localized string similar to None.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.NoResponseSource">
+<summary>
+  Looks up a localized string similar to No Response Source.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Number_Percent">
+<summary>
+  Looks up a localized string similar to {1}%.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.PollingFailed">
+<summary>
+  Looks up a localized string similar to Unable to open polling.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.PortUnavailable">
+<summary>
+  Looks up a localized string similar to Selected port is unavailable. Please enter a different port..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.PresenterName">
+<summary>
+  Looks up a localized string similar to {1} {2}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Proxy_MsgTestFailed">
+<summary>
+  Looks up a localized string similar to Test Failed. Please check your proxy and internet settings and try again.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Proxy_MsgTestSuccess">
+<summary>
+  Looks up a localized string similar to Test Completed Successfully..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.PulseChannel">
+<summary>
+  Looks up a localized string similar to Pulse Channel {1}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Question">
+<summary>
+  Looks up a localized string similar to Question.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.RandomItem">
+<summary>
+  Looks up a localized string similar to Random.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.RCAWSession">
+<summary>
+  Looks up a localized string similar to {1} Session.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.RecoveryFailedTitle">
+<summary>
+  Looks up a localized string similar to Unable to Recover Session.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.RemotePollConnectionsX">
+<summary>
+  Looks up a localized string similar to RemotePoll Connections: {1}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ReservedIdMessage">
+<summary>
+  Looks up a localized string similar to The session you are trying to reserve has already been reserved. Please try reserving a different session ID..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ReservedIdTitle">
+<summary>
+  Looks up a localized string similar to Session Reserved.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ReserveLimitMessage">
+<summary>
+  Looks up a localized string similar to The maximum number of allowed reserved session IDs has been reached. Please remove an existing reservation to reserve a new session ID..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ReserveLimitTitle">
+<summary>
+  Looks up a localized string similar to Reservation Limit.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.Retry">
+<summary>
+  Looks up a localized string similar to Retry.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.RWPresentationState">
+<summary>
+  Looks up a localized string similar to Presentation.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.RWSelfPacedState">
+<summary>
+  Looks up a localized string similar to Self-Paced.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.RWW_Disconnect">
+<summary>
+  Looks up a localized string similar to The connection for mobile responses has been lost..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.RWW_Reconnect">
+<summary>
+  Looks up a localized string similar to The connection for mobile responses has been lost..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SelfPacedRecoveryQListMismatch">
+<summary>
+  Looks up a localized string similar to The selected question list does not match the active test..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SelfPacedRecoveryRequirements">
+<summary>
+  Looks up a localized string similar to To recover a Self-Paced session you must have the same question list loaded, an auto course selected and a clean session file..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SelfPacedRecoveryWarning">
+<summary>
+  Looks up a localized string similar to Self-Paced sessions can only be recovered while in Self-Paced Polling..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ServerErrorMessage">
+<summary>
+  Looks up a localized string similar to There was an error communicating with the server..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ServerErrorTitle">
+<summary>
+  Looks up a localized string similar to Server Error.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SessionX">
+<summary>
+  Looks up a localized string similar to Session ID {1}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ShortAnswerX">
+<summary>
+  Looks up a localized string similar to Short Answer {1}.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.ShutdownPulseClickerMessage">
+<summary>
+  Looks up a localized string similar to Powering down Pulse clickers..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SignalStrength">
+<summary>
+  Looks up a localized string similar to {1} ({2}).
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SignalStrength_Stable">
+<summary>
+  Looks up a localized string similar to Stable.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SignalStrength_Strong">
+<summary>
+  Looks up a localized string similar to Strong.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SignalStrength_Unstable">
+<summary>
+  Looks up a localized string similar to Unstable.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.SignalStrength_Weak">
+<summary>
+  Looks up a localized string similar to Weak.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.TimeOutMessage">
+<summary>
+  Looks up a localized string similar to You are no longer signed in. Please sign in again..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.TrueText">
+<summary>
+  Looks up a localized string similar to True.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.UnavailableIDMessage">
+<summary>
+  Looks up a localized string similar to Can not create session with the session ID provided, already in use or reserved. Please try a different session ID..
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.UnavailableIDTitle">
+<summary>
+  Looks up a localized string similar to Session ID Unavailable.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Localization.UnknownError">
+<summary>
+  Looks up a localized string similar to Unknown Error.
+</summary>
+</member>
+<member name="T:Turning.TTResponseSources.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:Turning.TTResponseSources.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="M:Turning.TTResponseSources.HIDDevices.Shutdown">
+ <summary>
+ This method closes all open connections and removes references to all attached receivers.
+ </summary>
+ <remarks>This method should be called prior to exiting the parent application.</remarks>
+</member>
+<member name="E:Turning.TTResponseSources.RIDevices.Response">
+ <summary>
+ Once a Poll is started all responses from attached receivers are accessed from this event.
+ </summary>
+ <param name="ReceiverId">Contains the identification value for the receiver the current response was collected from.</param>
+ <param name="DeviceId">Contains the identification value for the ResponseCard the current response originated from.</param>
+ <param name="Response">The current response value the user selected.</param>
+ <remarks>Valid responses are 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ?, and *.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.RIDevices.#ctor">
+ <summary>
+ Initializes a new instance of the Poll class with the specified company name and license key.
+ </summary>
+ <remarks>If a valid company name and license key is not entered the object will fail to load.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.RIDevices.Refresh">
+ <summary>
+ Forces the Poll object to search for any receiver changes. 
+ </summary>
+ <remarks>If a receiver is added or removed this method can be called to discover changes.  If a poll has been started this method will end it.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.RIDevices.StartPolling">
+ <summary>
+ This method will start polling on all attached receivers.
+ </summary>
+ <remarks>Once a poll has been started reponses can be received through the Response event.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.RIDevices.EndPolling">
+ <summary>
+ This method will end polling on all attached receivers.
+ </summary>
+ <remarks>Once a poll has ended responses will no longer be collected until StartPoll is called again.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.RIDevices.Shutdown">
+ <summary>
+ This method closes all open connections and removes references to all attached receivers.
+ </summary>
+ <remarks>This method should be called prior to exiting the parent application.</remarks>
+</member>
+<member name="P:Turning.TTResponseSources.RIDevices.ReceiverCount">
+ <summary>
+ Gets the number of receivers currently initialized.
+ </summary>
+ <returns>The total number of receivers attached and initialized.</returns>
+ <remarks>If no receivers are attached or a valid company name and license key is not present ReceiverCount will be zero.</remarks>
+</member>
+<member name="T:Turning.TTResponseSources.TTResponseSource">
+ <summary>
+ 
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.ObtainKey">
+ <summary>
+ Function to obtain a Hexidecimal Key to be Encrypted to verify a Proper License
+ </summary>
+</member>
+<member name="M:Turning.TTResponseSources.TTResponseSource.Create(System.String,Turning.TTResponseSources.ITTResponseSourceSettings,System.ComponentModel.ISynchronizeInvoke,System.Collections.Generic.SortedList{System.String,System.String})">
+ <summary>
+ Shared Function to Create a new TPResponseSource Object
+ </summary>
+ <param name="AuthenticationCode">Base64 Encryption of the Key returned by ObtainKey</param>
+ <param name="oSyncObject">Windows Control object used to Syncronize Events on the main thread</param>
+ <returns>Nothing if the Create Fails, the new Object if the Create Succeeds</returns>
+ <remarks></remarks>
+</member>
+<member name="E:Turning.TTResponseSources.TTResponseSource.NewResponse">
+ <summary>
+ Event Triggered each time a New Response is received
+ </summary>
+ <param name="Source">Either 'Simulated', 'RWHost, or the Serial Number of the Receiver</param>
+ <param name="DeviceID">DeviceID that generated the Response</param>
+ <param name="Response">The Response generated</param>
+ <remarks></remarks>
+</member>
+<member name="E:Turning.TTResponseSources.TTResponseSource.ClearResponse">
+ <summary>
+ Event Triggered each time a Response is cleared
+ </summary>
+ <param name="DeviceID">DeviceID that generated the Response</param>
+ <remarks></remarks>
+</member>
+<member name="E:Turning.TTResponseSources.TTResponseSource.Disconnection">
+ <summary>
+ Used by ResponseWare Web to indicate a Device has disconnected. Useful for freeing up Capacity.
+ </summary>
+ <param name="Source">Should be 'RWHost'</param>
+ <param name="DeviceID">Device ID of the Device attempting to connect</param>
+ <remarks></remarks>
+</member>
+<member name="E:Turning.TTResponseSources.TTResponseSource.WarningMessage">
+ <summary>
+ Event Triggered when an event occurs that is unexpected but was handled by code.
+ </summary>
+ <param name="Message"></param>
+ <remarks></remarks>
+</member>
+<member name="E:Turning.TTResponseSources.TTResponseSource.ErrorMessage">
+ <summary>
+ Event Triggered when an event occurs that breaks functionality of the Object
+ </summary>
+ <param name="ErrorCode">Enumerated value indicating the error that occured</param>
+ <param name="Data"></param>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.Title">
+ <summary>
+ Usually the Text of the Question
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.Message">
+ <summary>
+ Body of the Message when Displaying a Message in ResponseWare Web
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="F:Turning.TTResponseSources.TTResponseSource.Answers">
+ <summary>
+ An Array of the text of the Answers
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.BulletStyle">
+ <summary>
+ Value indicating which of the Supported Bullets types should be displayed in ResponseWare Web
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.ResponseLength">
+ <summary>
+ Used to indicate the Number of Responses allowed for MultiResponse Slides
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.QuestionGUID">
+ <summary>
+ 'Used to identify question for RemotePoll
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.QuestionType">
+ <summary>
+ Used to identify question type for RemotePoll
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.CurrentQuestion">
+ <summary>
+ Used to store currently polling question
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.ChannelManager">
+ <summary>
+ Method to return an Instance of the TPChannelManager Object
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.PresenterWare">
+ <summary>
+ Method to return an Instance of the TTPresenterWare Object
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.InvalidResponseNotification">
+ <summary>
+ True indicates that RI Devices will only blink Green for Valid Responses
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.AcceptUserData">
+ <summary>
+ True indicates that the Devices should accept and/or Prompt for User Information, False tells the Object to ignore any incoming UserInformation
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.EnforceParticipantList">
+ <summary>
+ True indicates the system should limit Responses to those users already in the Participant List; false indicates that all users should be allowed to respond.
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.PollTest">
+ <summary>
+ True if the System currently has Polling Test open, False otherwise
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.WorkerNeedsUpdated">
+ <summary>
+ Flag to that determines whether to look for new devices.
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.IsPolling">
+ <summary>
+ True if the System is Currently Polling, False otherwise
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.PollingMode">
+ <summary>
+ Return a value indicated what the Current Polling State is of the Object
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.SimulateCount">
+ <summary>
+ Count of the number of Devices to Simulate with if a Participant List is not used.
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:Turning.TTResponseSources.TTResponseSource.UseSimulated">
+ <summary>
+ True tells the system to use Simulated data instead of actual Responses, False tells the system to use real data.
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTResponseSource.StartPolling(Turning.TTSessionLibrary.ITTQuestion,System.String,System.Byte[])">
+ <summary>
+ Starts Polling on any Devices selected, or with Simulated Data if specified
+ </summary>
+ <param name="question">question object from which to set polling properties. Must be build for PollingObjects.</param>
+ <remarks></remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTResponseSource.GenerateRWQuestion(Turning.TTSessionLibrary.ITTQuestion,System.String,System.Byte[])">
+ <summary>
+ GenerateRWQuestion makes a RWQuestion object to send in an atmosphere message.
+ </summary>
+ <param name="question"></param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTResponseSource.EndPolling(System.Boolean,System.Boolean)">
+ <summary>
+ Ends Polling on any Devices Selected, will trigger Response Events from ResponseWare Web before completing
+ </summary>
+ <param name="clearDisplay">This is used to tell ResponseWare whether to enter review mode (false) or just close polling (true).</param>
+ <param name="isSelfPaced">This is used to prevent the Self-Paced environment from affecting ResponseWare.</param>
+ <remarks></remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTResponseSource.ShowResults(Turning.TTSessionLibrary.TTResults,System.Int32,System.Boolean,System.Collections.Generic.List{System.Collections.Generic.List{System.Int32}})">
+ <summary>
+ Used to send a ShowResults message through ResponseWare
+ </summary>
+ <param name="results">the results</param>
+ <param name="divisor">What to divide by to figure percentage</param>
+ <param name="showPercent">Whether to show percentage</param>
+ <param name="colors">What colors for the bars in the chart. There should be the same number of these as there are results and in desired order.</param>
+ <remarks></remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTResponseSource.CheckResponseWareUserData(System.String)">
+ <summary>
+ CheckResponseWareUserData will check if there is unsubmitted user data for the given device id and if there is it will submit it.
+ </summary>
+ <param name="deviceId"></param>
+ <remarks></remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTResponseSource.ImportRCAWSessions">
+ <summary>
+ 
+ </summary>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="E:Turning.TTResponseSources.TTSimulated.Response">
+ <summary>
+ Once a Poll is started all responses from attached receivers are accessed from this event.
+ </summary>
+ <param name="ReceiverId">Contains the identification value for the receiver the current response was collected from.</param>
+ <param name="DeviceId">Contains the identification value for the ResponseCard the current response originated from.</param>
+ <param name="Response">The current response value the user selected.</param>
+ <remarks>Valid responses are 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ?, and *.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTSimulated.#ctor">
+ <summary>
+ Initializes a new instance of the Poll class with the specified company name and license key.
+ </summary>
+ <remarks>If a valid company name and license key is not entered the object will fail to load.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTSimulated.Refresh">
+ <summary>
+ Forces the Poll object to search for any receiver changes. 
+ </summary>
+ <remarks>If a receiver is added or removed this method can be called to discover changes.  If a poll has been started this method will end it.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTSimulated.EndPolling">
+ <summary>
+ This method will end polling on all attached receivers.
+ </summary>
+ <remarks>Once a poll has ended responses will no longer be collected until StartPoll is called again.</remarks>
+</member>
+<member name="M:Turning.TTResponseSources.TTSimulated.Shutdown">
+ <summary>
+ This method closes all open connections and removes references to all attached receivers.
+ </summary>
+ <remarks>This method should be called prior to exiting the parent application.</remarks>
+</member>
+</members>
+</doc>

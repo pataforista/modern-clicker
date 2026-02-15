@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TP_LMS>
+  <LMS_Descriptors>
+
+    <LMS_Descriptor id="1" service="LMS.Services.Blackboard.BlackboardServiceAdapter">
+      <Name>Blackboard</Name>
+      <Description>Blackboard</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+      <!--True means Support Overriding & False means does not support overriding -->
+      <FIPSCompliant>True</FIPSCompliant>
+    </LMS_Descriptor>
+
+    <LMS_Descriptor id="2" service="LMS.Services.Blackboard.BlackboardSSOServiceAdapter">
+      <Name>Blackboard SSO</Name>
+      <Description>Blackboard SSO</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+      <!--True means Support Overriding & False means does not support overriding -->
+      <FIPSCompliant>True</FIPSCompliant>
+    </LMS_Descriptor>
+
+    <LMS_Descriptor id="3" service="LMS.Services.D2L.D2LServiceAdapter">
+      <Name>Brightspace</Name>
+      <Description>Brightspace</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+      <FIPSCompliant>True</FIPSCompliant>
+    </LMS_Descriptor>
+
+    <LMS_Descriptor id="4" service="LMS.Services.Canvas.CanvasServiceAdapter">
+      <Name>Canvas</Name>
+      <Description>Canvas</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+    </LMS_Descriptor>
+
+    <LMS_Descriptor id="5" service="LMS.Services.Moodle.MoodleServiceAdapter">
+      <Name>Moodle</Name>
+      <Description>Moodle</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+      <FIPSCompliant>False</FIPSCompliant>
+    </LMS_Descriptor>
+
+    <LMS_Descriptor id="6" service="LMS.Services.Moodle.MoodleSSOServiceAdapter">
+      <Name>Moodle SSO</Name>
+      <Description>Moodle SSO</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+      <FIPSCompliant>False</FIPSCompliant>
+    </LMS_Descriptor>
+
+    <!--<LMS_Descriptor id="5" service="LMS.Services.Angel.AngelServiceAdapter">
+      <Name>Angel</Name>
+      <Description>Angel</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+      <FIPSCompliant>True</FIPSCompliant>
+    </LMS_Descriptor>-->
+
+    <LMS_Descriptor id="7" service="LMS.Services.PerformanceMatters.PerformanceMattersServiceAdapter">
+      <Name>Performance Matters</Name>
+      <Description>Performance Matters</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+    </LMS_Descriptor>
+
+    <LMS_Descriptor id="8" service="LMS.Services.Sakai.SakaiServiceAdapter">
+      <Name>Sakai</Name>
+      <Description>Sakai</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+      <FIPSCompliant>False</FIPSCompliant>
+    </LMS_Descriptor>
+
+    <LMS_Descriptor id="9" service="LMS.Services.Sakai.SakaiSSOServiceAdapter">
+      <Name>Sakai SSO</Name>
+      <Description>Sakai SSO</Description>
+      <Version></Version>
+      <Emailing>True</Emailing >
+      <Overriding>True</Overriding>
+      <!--True means Support Overriding & False means does not support overriding -->
+      <FIPSCompliant>True</FIPSCompliant>
+    </LMS_Descriptor>
+
+  </LMS_Descriptors>
+</TP_LMS>
