@@ -150,7 +150,7 @@ export default function QuizManager() {
                 <h2>Banco de Preguntas</h2>
                 <div className="header-actions-mini">
                     <button className="btn btn-secondary" onClick={() => setShowBulkImport((prev) => !prev)}>
-                        <Upload size={16} /> Carga masiva
+                        <Upload size={16} /> Pegar varias
                     </button>
                     <button className="btn btn-secondary" onClick={handleCreate}>
                         <Plus size={16} /> Nueva Pregunta
@@ -171,7 +171,7 @@ export default function QuizManager() {
                         placeholder={"¿Capital de Chile?\nA: Lima\nB: Bogotá\nC: Santiago\nD: Quito\nE: Caracas\nRESPUESTA: C\n\n¿2 + 2?\nA: 1\nB: 2\nC: 3\nD: 4\nE: 5\nRESPUESTA: D"}
                     />
                     <button className="btn btn-primary btn-xs" onClick={handleBulkImport}>
-                        Importar preguntas
+                        Importar preguntas ahora
                     </button>
                 </div>
             )}

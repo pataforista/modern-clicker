@@ -14,7 +14,9 @@ import {
   FileSpreadsheet,
   Activity,
   FileText,
-  XCircle
+  XCircle,
+  Info,
+  X
 } from 'lucide-react';
 import { QuizProvider, useQuiz } from './context/QuizContext';
 import QuizManager from './components/QuizManager';
@@ -302,7 +304,13 @@ function Dashboard() {
           </button>
           <div className={`status-badge ${connected ? 'online' : 'offline'}`}>
             {connected ? <Wifi size={16} /> : <WifiOff size={16} />}
-            <span>{serialStatus.mode === 'simulator' ? 'SIMULADOR' : (connected ? 'Hardware OK' : 'Hardware Off')}</span>
+            <span>
+              {serialStatus.mode === 'official'
+                ? 'USB oficial'
+                : serialStatus.mode === 'simulator'
+                  ? 'SIMULADOR'
+                  : (connected ? 'Hardware OK' : 'Hardware Off')}
+            </span>
           </div>
         </div>
       </header>

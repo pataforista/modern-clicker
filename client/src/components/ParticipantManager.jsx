@@ -163,17 +163,17 @@ export default function ParticipantManager() {
             <div className="card-header">
                 <h2>Participantes</h2>
                 <div className="header-actions-mini">
-                    <button className="icon-btn" onClick={() => setShowImport(!showImport)} title="Importar lista">
-                        <Upload size={16} />
+                    <button className="btn btn-secondary btn-sm" onClick={() => setShowImport(!showImport)} title="Importar lista">
+                        <Upload size={16} /> Importar
                     </button>
-                    <button className="icon-btn" onClick={handleExportJson} title="Descargar JSON">
-                        <Download size={16} />
+                    <button className="btn btn-secondary btn-sm" onClick={handleExportJson} title="Descargar JSON">
+                        <Download size={16} /> JSON
                     </button>
-                    <button className="icon-btn" onClick={handleExportCsv} title="Descargar CSV">
-                        <Users size={16} />
+                    <button className="btn btn-secondary btn-sm" onClick={handleExportCsv} title="Descargar CSV">
+                        <Users size={16} /> CSV
                     </button>
-                    <button className="icon-btn text-danger" onClick={clearParticipants} title="Borrar todos">
-                        <Trash2 size={16} />
+                    <button className="btn btn-danger btn-sm" onClick={clearParticipants} title="Borrar todos">
+                        <Trash2 size={16} /> Borrar
                     </button>
                 </div>
             </div>
