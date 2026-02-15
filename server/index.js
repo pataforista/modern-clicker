@@ -7,6 +7,10 @@ import { z } from "zod";
 import { SerialPort } from "serialport";
 import { ReadlineParser } from "@serialport/parser-readline";
 import { startSimulator } from "./simulator.js";
+import * as HID from 'node-hid';
+
+const TP_VENDOR_ID = 0x2058; // Turning Technologies
+const TP_PRODUCT_IDS = [0x1004, 0x1005, 12, 11]; // Models RRRF-03, RRRF-04, etc.
 
 const env = {
   PORT: Number(process.env.PORT ?? 3001),
@@ -40,9 +44,10 @@ const io = new SocketIOServer(server, {
 });
 
 // State
-let serialState = { mode: env.SIMULATOR ? "simulator" : "serial", connected: false, lastError: null };
+let serialState = { mode: "official", connected: false, lastError: null };
 let stopSim = null;
 let currentPort = null;
+let hidDevice = null;
 
 // Session State (Source of Truth)
 let sessionState = {
@@ -310,28 +315,69 @@ function startSerialWithRetry() {
     });
   };
 
-  connect();
-}
+  function startOfficialReceiver() {
+    const devices = HID.devices();
+    const found = devices.find(d => d.vendorId === TP_VENDOR_ID && TP_PRODUCT_IDS.includes(d.productId));
 
-function start() {
-  if (env.SIMULATOR) {
-    console.log("Starting in FORCED SIMULATOR mode");
-    serialState.mode = "simulator";
-    stopSim = startSimulator({
-      emitVote: (v) => acceptVote(v),
-      emitStatus: (s) => {
-        if (s.connected !== undefined) serialState.connected = s.connected;
-        emitStatus();
-      }
-    });
-  } else {
-    startSerialWithRetry();
+    if (!found || !found.path) {
+      console.log("Official USB Receiver not found. Trying Serial/Arduino...");
+      startSerialWithRetry();
+      return;
+    }
+
+    try {
+      hidDevice = new HID.HID(found.path);
+      serialState.mode = "official";
+      serialState.connected = true;
+      console.log("Official TurningPoint USB Receiver Connected!");
+      emitStatus({ note: "Receptor oficial conectado" });
+
+      hidDevice.on("data", (data) => {
+        // Basic decoding for TP HID protocol (simplified version based on reverse engineering)
+        // Standard packets are 10-12 bytes
+        if (data.length >= 5) {
+          const id = data.slice(0, 3).toString('hex').toUpperCase();
+          const voteByte = data[4];
+          let key = '?';
+          const keyMap = { 0x31: 'A', 0x32: 'B', 0x33: 'C', 0x34: 'D', 0x35: 'E', 0x36: 'F' };
+          key = keyMap[voteByte] || '?';
+
+          if (id !== "000000") {
+            acceptVote({ id, key, ts: Date.now(), source: "official" });
+          }
+        }
+      });
+
+      hidDevice.on("error", (err) => {
+        console.error("HID Error:", err);
+        serialState.connected = false;
+        setTimeout(startOfficialReceiver, 2000);
+      });
+    } catch (e) {
+      console.error("Failed to open HID Device:", e.message);
+      startSerialWithRetry();
+    }
   }
 
-  server.listen(env.PORT, () => {
-    console.log(`Server listening on port ${env.PORT}`);
-    emitStatus({ note: `listening on ${env.PORT}` });
-  });
-}
+  function start() {
+    if (env.SIMULATOR) {
+      console.log("Starting in FORCED SIMULATOR mode");
+      serialState.mode = "simulator";
+      stopSim = startSimulator({
+        emitVote: (v) => acceptVote(v),
+        emitStatus: (s) => {
+          if (s.connected !== undefined) serialState.connected = s.connected;
+          emitStatus();
+        }
+      });
+    } else {
+      startOfficialReceiver();
+    }
 
-start();
+    server.listen(env.PORT, () => {
+      console.log(`Server listening on port ${env.PORT}`);
+      emitStatus({ note: `listening on ${env.PORT}` });
+    });
+  }
+
+  start();
