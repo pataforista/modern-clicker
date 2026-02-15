@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Instalación Rápida - Modern Clicker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --text: #1e293b;
+            --bg: #f8fafc;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: white;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        h1 { color: var(--primary); margin: 0; font-size: 2.5rem; }
+        .step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            background: var(--bg);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--primary);
+        }
+        .step-num {
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+            font-size: 1.2rem;
+        }
+        .step-content h2 { margin: 0 0 10px 0; font-size: 1.3rem; }
+        .status-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        .status-item {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .status-ok { background: #dcfce7; color: #166534; border: 1px solid #10b981; }
+        .status-err { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .highlight {
+            background: #fef08a;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+            .step { break-inside: avoid; border: 1px solid #e2e8f0; }
+        }
+        .btn-print {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: right;">
+        <a href="#" onclick="window.print()" class="btn-print">Imprimir esta guía</a>
+    </div>
+
+    <div class="header">
+        <h1>Guía de Inicio Rápido</h1>
+        <p>Sistema de Votación Moderno</p>
+    </div>
+
+    <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+            <h2>Conectar el Hardware</h2>
+            <p>Conecta el receptor USB original de TurningPoint a cualquier puerto USB de la computadora. <strong>No necesitas instalar discos ni controladores</strong>, la computadora lo reconocerá sola.</p>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+            <h2>Verificar conexión</h2>
+            <p>En el panel de control de la computadora, verás un mensaje que dice <span class="highlight">DETECTADO: Original USB</span> en color verde. Si aparece en rojo, prueba cambiar el receptor a otro puerto USB.</p>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+            <h2>Sincronizar Clickers</h2>
+            <p>Si un control no funciona, realiza esta secuencia rápida:</p>
+            <ol>
+                <li>Presiona el botón <span class="highlight">CH</span> (el LED parpadeará).</li>
+                <li>Ingresa el número <strong>41</strong> (o el que veas en pantalla).</li>
+                <li>Presiona <span class="highlight">CH</span> otra vez.</li>
+                <li>El control debe parpadear en <strong>Verde</strong>. ¡Listo!</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="status-box">
+        <div class="status-item status-ok">
+            ✓ TODO LISTO<br>
+            El receptor tiene la luz encendida y la pantalla muestra "Detectado".
+        </div>
+        <div class="status-item status-err">
+            ⚠ ERROR<br>
+            Si la luz del USB está apagada, desconecta y vuelve a conectar.
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2026 Sistema Moderno de Clickers - Diseñado para ser fácil.
+    </div>
+</body>
+</html>
