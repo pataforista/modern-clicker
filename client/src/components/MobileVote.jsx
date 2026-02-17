@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Send, CheckCircle2, User, Fingerprint } from 'lucide-react';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+const getSocketUrl = () => {
+    if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
+
+    const { protocol, hostname, origin } = window.location;
+
+    // If we are on a tunnel or public URL (not localhost), use the same origin
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+        return origin;
+    }
+
+    // Fallback for local development
+    return `${protocol}//${hostname}:3001`;
+};
+
+
+const SOCKET_URL = getSocketUrl();
+
 
 export default function MobileVote() {
     const [id, setId] = useState(() => localStorage.getItem('mobile_vote_id') || Math.random().toString(36).substr(2, 6).toUpperCase());
@@ -37,8 +53,10 @@ export default function MobileVote() {
                 setVoted(true);
                 setTimeout(() => setVoted(false), 2000);
             } else {
-                setError('Error al enviar voto');
+                const data = await resp.json();
+                setError(data.error || 'Error al enviar voto');
             }
+
         } catch (e) {
             setError('Sin conexión con el servidor');
         } finally {

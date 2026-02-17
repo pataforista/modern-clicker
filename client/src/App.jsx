@@ -454,17 +454,26 @@ function Dashboard() {
             <div className="qr-content">
               <div className="qr-box">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + '#/vote')}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent((serialStatus.tunnelUrl || window.location.origin) + '#/vote')}`}
                   alt="QR Code"
                 />
               </div>
               <div className="qr-instructions">
-                <h3>Escanea para votar</h3>
-                <p>Apunta con la cámara de tu celular para entrar a la sesión.</p>
+                <h3>Escanea para votar desde internet</h3>
+                <p>Usa tus datos móviles o cualquier red para entrar a la sesión.</p>
                 <div className="url-copy">
-                  <code>{window.location.origin}/#/vote</code>
+                  <code>{(serialStatus.tunnelUrl || window.location.origin)}/#/vote</code>
                 </div>
+
+                {(window.location.hostname === 'localhost' && !serialStatus.tunnelUrl) && (
+                  <div className="qr-warning">
+                    <AlertTriangle size={16} />
+                    <p>Estás usando "localhost". Para que otros se conecten, abre este panel usando tu <strong>IP Local</strong> o usa el tunel de arriba.</p>
+                  </div>
+                )}
               </div>
+
+
             </div>
           </div>
         </div>

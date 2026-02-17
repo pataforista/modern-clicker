@@ -8,6 +8,8 @@ import { SerialPort } from "serialport";
 import { ReadlineParser } from "@serialport/parser-readline";
 import { startSimulator } from "./simulator.js";
 import * as HID from 'node-hid';
+import localtunnel from 'localtunnel';
+
 
 const TP_DEVICES = [
   { vid: 0x2058, pids: [0x1004, 0x1005, 12, 11] },
@@ -47,7 +49,8 @@ const io = new SocketIOServer(server, {
 });
 
 // State
-let serialState = { mode: "official", connected: false, lastError: null };
+let serialState = { mode: "official", connected: false, lastError: null, tunnelUrl: null };
+
 let stopSim = null;
 let currentPort = null;
 let hidDevice = null;
@@ -154,9 +157,14 @@ app.post("/vote/mobile", (req, res) => {
     source: "mobile"
   };
 
+  if (sessionState.status !== "RUNNING" && sessionState.status !== "TESTING") {
+    return res.status(400).json({ error: "La sesión no esta activa" });
+  }
+
   acceptVote(vote);
   res.json({ ok: true });
 });
+
 
 app.post("/sync/participants", (req, res) => {
   sessionState.participants = req.body.participants || {};
@@ -328,6 +336,7 @@ function startOfficialReceiver() {
   }
 
 
+
   try {
     hidDevice = new HID.HID(found.path);
     serialState.mode = "official";
@@ -338,6 +347,7 @@ function startOfficialReceiver() {
 
     hidDevice.on("data", (data) => {
       if (data.length >= 5) {
+
         const id = data.slice(0, 3).toString("hex").toUpperCase();
         const voteByte = data[4];
         const keyMap = { 0x31: "A", 0x32: "B", 0x33: "C", 0x34: "D", 0x35: "E", 0x36: "F" };
@@ -379,10 +389,30 @@ function start() {
     startOfficialReceiver();
   }
 
-  server.listen(env.PORT, () => {
+  server.listen(env.PORT, async () => {
     console.log(`Server listening on port ${env.PORT}`);
     emitStatus({ note: `listening on ${env.PORT}` });
+
+    // Open public tunnel
+    try {
+      console.log("Opening public tunnel for mobile voting...");
+      const tunnel = await localtunnel({
+        port: env.PORT,
+        subdomain: `clicker-session-${Math.random().toString(36).substring(2, 7)}`
+      });
+      serialState.tunnelUrl = tunnel.url;
+      console.log(`Public Tunnel URL: ${tunnel.url}`);
+      emitStatus({ note: "Túnel público activo" });
+
+      tunnel.on('close', () => {
+        serialState.tunnelUrl = null;
+        emitStatus({ note: "Túnel cerrado" });
+      });
+    } catch (e) {
+      console.error("Failed to open public tunnel:", e.message);
+    }
   });
 }
+
 
 start();

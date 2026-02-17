@@ -1436,6 +1436,26 @@ body {
   font-size: 0.9rem;
 }
 
+.qr-warning {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid #f59e0b;
+  border-radius: 0.5rem;
+  color: #f59e0b;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1.3;
+}
+
+.qr-warning p {
+  margin: 0 !important;
+  text-align: left;
+}
+
+
 @keyframes slide-down {
   from {
     opacity: 0;
