@@ -9,8 +9,11 @@ import { ReadlineParser } from "@serialport/parser-readline";
 import { startSimulator } from "./simulator.js";
 import * as HID from 'node-hid';
 
-const TP_VENDOR_ID = 0x2058; // Turning Technologies
-const TP_PRODUCT_IDS = [0x1004, 0x1005, 12, 11]; // Models RRRF-03, RRRF-04, etc.
+const TP_DEVICES = [
+  { vid: 0x2058, pids: [0x1004, 0x1005, 12, 11] },
+  { vid: 0x04d8, pids: [0xfeaf, 0x000b] } // Models RRRF-03 and variants
+];
+
 
 const env = {
   PORT: Number(process.env.PORT ?? 3001),
@@ -314,13 +317,16 @@ function startSerialWithRetry() {
 
 function startOfficialReceiver() {
   const devices = HID.devices();
-  const found = devices.find((d) => d.vendorId === TP_VENDOR_ID && TP_PRODUCT_IDS.includes(d.productId));
+  const found = devices.find((d) =>
+    TP_DEVICES.some(tp => tp.vid === d.vendorId && tp.pids.includes(d.productId))
+  );
 
   if (!found || !found.path) {
     console.log("Official USB Receiver not found. Trying Serial/Arduino...");
     startSerialWithRetry();
     return;
   }
+
 
   try {
     hidDevice = new HID.HID(found.path);
