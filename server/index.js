@@ -58,6 +58,7 @@ const TUNNEL_TIMEOUT_MS = Number(process.env.TUNNEL_TIMEOUT_MS ?? 15000);
 let stopSim = null;
 let currentPort = null;
 let hidDevice = null;
+const DEFAULT_ROOM_CODE = "GLOBAL";
 
 const dataDir = path.join(process.cwd(), 'data');
 const usersFile = path.join(dataDir, 'users.json');
@@ -101,6 +102,33 @@ let sessionState = {
   participants: {}, // id -> {id, name, number}
   questions: []    // list of {id, text, options, correctAnswer}
 };
+
+const rooms = new Map();
+
+function normalizeRoomCode(value) {
+  const roomCode = String(value ?? DEFAULT_ROOM_CODE).trim().toUpperCase();
+  return roomCode || DEFAULT_ROOM_CODE;
+}
+
+function generateRoomCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i += 1) {
+    code += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return code;
+}
+
+function ensureRoom(value) {
+  const roomCode = normalizeRoomCode(value);
+  if (!rooms.has(roomCode)) {
+    rooms.set(roomCode, { code: roomCode, createdAt: new Date().toISOString() });
+  }
+  return rooms.get(roomCode);
+}
+
+ensureRoom(DEFAULT_ROOM_CODE);
+
 const recentMobileVoteIds = new Set();
 const MAX_RECENT_MOBILE_VOTES = 2000;
 
@@ -110,6 +138,7 @@ function emitStatus(extra = {}) {
   // Convert Map to size for transmission
   const payload = {
     ...serialState,
+    roomCode: normalizeRoomCode(extra.roomCode),
     session: {
       status: sessionState.status,
       votes: sessionState.votesById.size,
@@ -147,10 +176,12 @@ function acceptVote(vote) {
 // --- API Endpoints ---
 
 app.get("/health", (req, res) => {
+  const room = ensureRoom(req.query.roomCode);
   res.json({
     ok: true,
     mode: serialState.mode,
     serialConnected: serialState.connected,
+    roomCode: room.code,
     session: { status: sessionState.status, votes: sessionState.votesById.size }
   });
 });
@@ -181,8 +212,27 @@ app.post("/session/test", (req, res) => {
   res.json({ ok: true });
 });
 
+app.post('/rooms/create', (req, res) => {
+  let code = generateRoomCode();
+  while (rooms.has(code)) {
+    code = generateRoomCode();
+  }
+  const room = ensureRoom(code);
+  return res.json({ ok: true, roomCode: room.code });
+});
+
+app.post('/rooms/join', (req, res) => {
+  const roomCode = normalizeRoomCode(req.body?.roomCode);
+  const room = rooms.get(roomCode);
+  if (!room) {
+    return res.status(404).json({ error: 'Sala no encontrada.' });
+  }
+  return res.json({ ok: true, roomCode: room.code });
+});
+
+
 app.post("/vote/mobile", (req, res) => {
-  const { id, key, name, voteId } = req.body;
+  const { id, key, name, voteId, roomCode } = req.body;
   if (!id || !key) return res.status(400).json({ error: "Missing id or key" });
 
   if (voteId && recentMobileVoteIds.has(voteId)) {
@@ -198,6 +248,7 @@ app.post("/vote/mobile", (req, res) => {
     id: String(id),
     key: String(key).toUpperCase(),
     ts: Date.now(),
+    roomCode: normalizeRoomCode(roomCode),
     source: "mobile"
   };
 
@@ -327,9 +378,13 @@ app.post("/hw/channel", (req, res) => {
 io.on("connection", (socket) => {
   console.log("Client connected");
 
+  const room = ensureRoom(socket.handshake.auth?.roomCode ?? socket.handshake.query?.roomCode);
+  socket.join(room.code);
+
   // Send initial status
   socket.emit("status", {
     ...serialState,
+    roomCode: room.code,
     session: {
       status: sessionState.status,
       votes: sessionState.votesById.size,
