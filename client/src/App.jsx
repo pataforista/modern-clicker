@@ -40,6 +40,8 @@ const socket = io(SOCKET_URL, {
 
 const BAR_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
 
+const isVoteRoute = () => window.location.hash === '#/vote' || window.location.pathname === '/vote';
+
 const downloadCsv = (filename, rows) => {
   const body = rows.map((row) => row.map((value) => `"${(value ?? '').toString().replaceAll('"', '""')}"`).join(',')).join('\n');
   const blob = new Blob([body], { type: 'text/csv;charset=utf-8' });
@@ -66,16 +68,20 @@ function Dashboard() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [pendingIds, setPendingIds] = useState([]);
-  const [isMobileView, setIsMobileView] = useState(window.location.hash === '#/vote' || window.location.pathname === '/vote');
+  const [isMobileView, setIsMobileView] = useState(isVoteRoute());
   const [selectedDuration, setSelectedDuration] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const mobileVoteUrl = `${serialStatus.tunnelUrl || window.location.origin}/vote`;
 
   useEffect(() => {
-    const handleHash = () => setIsMobileView(window.location.hash === '#/vote');
+    const handleHash = () => setIsMobileView(isVoteRoute());
     window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+    window.addEventListener('popstate', handleHash);
+    return () => {
+      window.removeEventListener('hashchange', handleHash);
+      window.removeEventListener('popstate', handleHash);
+    };
   }, []);
 
   useEffect(() => {
@@ -93,6 +99,13 @@ function Dashboard() {
 
     return () => window.clearInterval(timer);
   }, [isTimerRunning]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && sessionStatus.status === 'RUNNING') {
+      sendCommand('pause');
+      setServerNote('Tiempo finalizado. La sesión se pausó automáticamente para evitar votos tardíos.');
+    }
+  }, [timeLeft, sessionStatus.status]);
 
   const {
     presentationMode,
@@ -279,7 +292,7 @@ function Dashboard() {
 
   const totalVotes = Object.keys(votes).length;
   const isSessionRunning = sessionStatus.status === 'RUNNING';
-  const topOption = [...data].sort((a, b) => b.count - a.count)[0];
+  const topOption = totalVotes ? [...data].sort((a, b) => b.count - a.count)[0] : null;
   const timerProgress = selectedDuration > 0 ? Math.round((timeLeft / selectedDuration) * 100) : 0;
 
   const startRoundTimer = () => {
@@ -453,6 +466,11 @@ function Dashboard() {
               <button className="btn btn-secondary btn-sm" onClick={startRoundTimer}>
                 <Play size={14} /> Iniciar ronda
               </button>
+              {isTimerRunning && (
+                <button className="btn btn-danger btn-sm" onClick={() => setIsTimerRunning(false)}>
+                  <Square size={14} /> Detener
+                </button>
+              )}
               <button className="btn btn-secondary btn-sm" onClick={resetRoundTimer}>
                 <TimerReset size={14} /> Reiniciar
               </button>
