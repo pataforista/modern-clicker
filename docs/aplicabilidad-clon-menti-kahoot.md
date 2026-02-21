@@ -73,3 +73,12 @@ Mantener stack actual:
 - Persistencia: iniciar con JSON/SQLite para salas y resultados; luego escalar.
 
 En resumen: de tu propuesta, lo más aplicable no es cambiar de tecnología, sino adoptar **el modelo de producto** (salas, fases de juego, join code, reconexión y resultados) encima de la base existente.
+
+
+## Estado de implementación inicial (primer paso)
+Se inició la base para el modelo de salas sin romper el flujo actual:
+- Se añadió `roomCode` por defecto (`GLOBAL`) en eventos de estado/voto para preparar separación por sala.
+- Se agregaron endpoints `POST /rooms/create` y `POST /rooms/join` con código corto de 6 caracteres.
+- Los sockets ahora pueden declarar `roomCode` al conectar y quedan asociados a una sala de Socket.IO.
+
+> Nota: en esta primera iteración, el estado de sesión aún es global; la siguiente fase migra `sessionState` a estado por sala.
