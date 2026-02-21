@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, CheckCircle2, User, Fingerprint } from 'lucide-react';
+import { Send, CheckCircle2, User, Fingerprint, LogIn, UserPlus } from 'lucide-react';
 
 const getSocketUrl = () => {
     if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
@@ -21,10 +21,15 @@ const SOCKET_URL = getSocketUrl();
 export default function MobileVote() {
     const [id, setId] = useState(() => localStorage.getItem('mobile_vote_id') || Math.random().toString(36).substr(2, 6).toUpperCase());
     const [name, setName] = useState(() => localStorage.getItem('mobile_vote_name') || '');
+    const [username, setUsername] = useState(() => localStorage.getItem('mobile_vote_username') || '');
+    const [pin, setPin] = useState('');
+    const [authMode, setAuthMode] = useState('login');
+    const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('mobile_vote_authenticated') === 'true');
     const [selectedKey, setSelectedKey] = useState(null);
     const [sending, setSending] = useState(false);
     const [voted, setVoted] = useState(false);
     const [error, setError] = useState(null);
+    const [authInfo, setAuthInfo] = useState(null);
     const [queue, setQueue] = useState(() => {
         try {
             return JSON.parse(localStorage.getItem('mobile_vote_queue') || '[]');
@@ -37,7 +42,9 @@ export default function MobileVote() {
     useEffect(() => {
         localStorage.setItem('mobile_vote_id', id);
         localStorage.setItem('mobile_vote_name', name);
-    }, [id, name]);
+        localStorage.setItem('mobile_vote_username', username);
+        localStorage.setItem('mobile_vote_authenticated', String(isAuthenticated));
+    }, [id, name, username, isAuthenticated]);
 
     useEffect(() => {
         localStorage.setItem('mobile_vote_queue', JSON.stringify(queue));
@@ -88,6 +95,11 @@ export default function MobileVote() {
     }, [queue.length]);
 
     const handleVote = async (key) => {
+        if (!isAuthenticated) {
+            setError('Primero debes registrarte o iniciar sesión.');
+            return;
+        }
+
         if (!name.trim()) {
             setError('Por favor ingresa tu nombre antes de votar');
             return;
@@ -127,6 +139,49 @@ export default function MobileVote() {
         }
     };
 
+    const handleAuth = async (mode) => {
+        if (!username.trim()) {
+            setError('Ingresa un nombre de usuario.');
+            return;
+        }
+
+        if (!name.trim()) {
+            setError('Ingresa un nombre visible para la sesión.');
+            return;
+        }
+
+        setError(null);
+        setAuthInfo(null);
+        setSending(true);
+
+        try {
+            const endpoint = mode === 'register' ? '/users/register' : '/users/login';
+            const resp = await fetch(`${SOCKET_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, pin, displayName: name })
+            });
+
+            const data = await resp.json();
+
+            if (!resp.ok) {
+                setError(data.error || 'No fue posible autenticarte.');
+                return;
+            }
+
+            setId(data.user.id);
+            setName(data.user.displayName || name);
+            setUsername(data.user.username);
+            setIsAuthenticated(true);
+            setPin('');
+            setAuthInfo(mode === 'register' ? 'Registro exitoso. Ya puedes votar.' : 'Sesión iniciada correctamente.');
+        } catch {
+            setError('No se pudo conectar al servidor de autenticación.');
+        } finally {
+            setSending(false);
+        }
+    };
+
     return (
         <div className="mobile-app">
             <header className="mobile-header">
@@ -136,6 +191,35 @@ export default function MobileVote() {
 
             <main className="mobile-main">
                 <section className="mobile-card">
+                    <div className="auth-toggle">
+                        <button
+                            className={`auth-btn ${authMode === 'login' ? 'active' : ''}`}
+                            onClick={() => setAuthMode('login')}
+                            disabled={sending}
+                            type="button"
+                        >
+                            <LogIn size={16} /> Iniciar sesión
+                        </button>
+                        <button
+                            className={`auth-btn ${authMode === 'register' ? 'active' : ''}`}
+                            onClick={() => setAuthMode('register')}
+                            disabled={sending}
+                            type="button"
+                        >
+                            <UserPlus size={16} /> Registrarse
+                        </button>
+                    </div>
+
+                    <div className="input-field">
+                        <label><User size={16} /> Usuario</label>
+                        <input
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                            placeholder="Ej: juan.perez"
+                            disabled={sending || isAuthenticated}
+                        />
+                    </div>
+
                     <div className="input-field">
                         <label><User size={16} /> Tu Nombre</label>
                         <input
@@ -145,10 +229,36 @@ export default function MobileVote() {
                             disabled={sending}
                         />
                     </div>
+
+                    <div className="input-field">
+                        <label><Fingerprint size={16} /> PIN (opcional)</label>
+                        <input
+                            value={pin}
+                            type="password"
+                            onChange={(e) => setPin(e.target.value)}
+                            placeholder="4-12 caracteres"
+                            disabled={sending || isAuthenticated}
+                        />
+                    </div>
+
                     <div className="input-field">
                         <label><Fingerprint size={16} /> ID de Sesión</label>
                         <input value={id} readOnly className="id-display" />
                     </div>
+
+                    {!isAuthenticated && (
+                        <button
+                            className="auth-submit"
+                            type="button"
+                            onClick={() => handleAuth(authMode)}
+                            disabled={sending}
+                        >
+                            {authMode === 'register' ? 'Crear cuenta' : 'Entrar'}
+                        </button>
+                    )}
+
+                    {isAuthenticated && <div className="mobile-instruction">Autenticado como @{username}</div>}
+                    {authInfo && <div className="mobile-success">{authInfo}</div>}
                 </section>
 
                 {error && <div className="mobile-error">{error}</div>}

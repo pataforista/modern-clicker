@@ -1311,6 +1311,39 @@ body {
   gap: 1rem;
 }
 
+.auth-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.auth-btn {
+  border: 1px solid rgba(176, 199, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  border-radius: 0.5rem;
+  padding: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.auth-btn.active {
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+  background: rgba(95, 140, 255, 0.15);
+}
+
+.auth-submit {
+  background: rgba(95, 140, 255, 0.2);
+  border: 1px solid var(--accent-color);
+  color: #fff;
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+}
+
 .input-field {
   display: flex;
   flex-direction: column;
@@ -1376,6 +1409,15 @@ body {
 .mobile-error {
   background: rgba(255, 93, 115, 0.15);
   color: var(--danger-color);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.mobile-success {
+  background: rgba(49, 208, 164, 0.15);
+  color: var(--success-color);
   padding: 0.75rem;
   border-radius: 0.5rem;
   text-align: center;

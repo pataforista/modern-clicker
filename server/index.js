@@ -9,6 +9,9 @@ import { ReadlineParser } from "@serialport/parser-readline";
 import { startSimulator } from "./simulator.js";
 import * as HID from 'node-hid';
 import localtunnel from 'localtunnel';
+import { createHash } from 'crypto';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import path from 'path';
 
 
 const TP_DEVICES = [
@@ -55,6 +58,40 @@ const TUNNEL_TIMEOUT_MS = Number(process.env.TUNNEL_TIMEOUT_MS ?? 15000);
 let stopSim = null;
 let currentPort = null;
 let hidDevice = null;
+
+const dataDir = path.join(process.cwd(), 'data');
+const usersFile = path.join(dataDir, 'users.json');
+
+function normalizeUsername(input) {
+  return String(input ?? '').trim().toLowerCase();
+}
+
+function hashPin(pin) {
+  return createHash('sha256').update(String(pin)).digest('hex');
+}
+
+function generateParticipantId() {
+  return Math.random().toString(36).slice(2, 8).toUpperCase();
+}
+
+function loadUsers() {
+  try {
+    if (!existsSync(usersFile)) {
+      return {};
+    }
+    const data = JSON.parse(readFileSync(usersFile, 'utf8'));
+    return data && typeof data === 'object' ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveUsers() {
+  mkdirSync(dataDir, { recursive: true });
+  writeFileSync(usersFile, JSON.stringify(registeredUsers, null, 2), 'utf8');
+}
+
+const registeredUsers = loadUsers();
 
 // Session State (Source of Truth)
 let sessionState = {
@@ -179,6 +216,78 @@ app.post("/vote/mobile", (req, res) => {
   }
 
   res.json({ ok: true });
+});
+
+app.post('/users/register', (req, res) => {
+  const rawUsername = String(req.body?.username ?? '').trim();
+  const username = normalizeUsername(rawUsername);
+  const pin = String(req.body?.pin ?? '').trim();
+
+  if (!username || username.length < 3 || username.length > 24) {
+    return res.status(400).json({ error: 'El usuario debe tener entre 3 y 24 caracteres.' });
+  }
+
+  if (!/^[a-z0-9._-]+$/.test(username)) {
+    return res.status(400).json({ error: 'El usuario solo puede contener letras, números, punto, guion o guion bajo.' });
+  }
+
+  if (pin && (pin.length < 4 || pin.length > 12)) {
+    return res.status(400).json({ error: 'El PIN debe tener entre 4 y 12 caracteres.' });
+  }
+
+  if (registeredUsers[username]) {
+    return res.status(409).json({ error: 'Ese nombre de usuario ya está registrado.' });
+  }
+
+  const id = generateParticipantId();
+  const now = new Date().toISOString();
+
+  registeredUsers[username] = {
+    username,
+    displayName: rawUsername,
+    id,
+    pinHash: pin ? hashPin(pin) : null,
+    createdAt: now,
+    lastLoginAt: now
+  };
+
+  saveUsers();
+
+  return res.json({
+    ok: true,
+    user: { id, username, displayName: rawUsername }
+  });
+});
+
+app.post('/users/login', (req, res) => {
+  const username = normalizeUsername(req.body?.username);
+  const pin = String(req.body?.pin ?? '').trim();
+
+  if (!username) {
+    return res.status(400).json({ error: 'Debes indicar un nombre de usuario.' });
+  }
+
+  const user = registeredUsers[username];
+
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado.' });
+  }
+
+  if (user.pinHash && user.pinHash !== hashPin(pin)) {
+    return res.status(401).json({ error: 'PIN inválido.' });
+  }
+
+  user.lastLoginAt = new Date().toISOString();
+  saveUsers();
+
+  return res.json({
+    ok: true,
+    user: {
+      id: user.id,
+      username: user.username,
+      displayName: user.displayName
+    }
+  });
 });
 
 
