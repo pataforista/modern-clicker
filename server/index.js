@@ -50,6 +50,7 @@ const io = new SocketIOServer(server, {
 
 // State
 let serialState = { mode: "official", connected: false, lastError: null, tunnelUrl: null };
+const TUNNEL_TIMEOUT_MS = Number(process.env.TUNNEL_TIMEOUT_MS ?? 15000);
 
 let stopSim = null;
 let currentPort = null;
@@ -396,10 +397,15 @@ function start() {
     // Open public tunnel
     try {
       console.log("Opening public tunnel for mobile voting...");
-      const tunnel = await localtunnel({
-        port: env.PORT,
-        subdomain: `clicker-session-${Math.random().toString(36).substring(2, 7)}`
-      });
+      const tunnel = await Promise.race([
+        localtunnel({
+          port: env.PORT,
+          subdomain: `clicker-session-${Math.random().toString(36).substring(2, 7)}`
+        }),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error(`Timeout after ${TUNNEL_TIMEOUT_MS}ms`)), TUNNEL_TIMEOUT_MS);
+        })
+      ]);
       serialState.tunnelUrl = tunnel.url;
       console.log(`Public Tunnel URL: ${tunnel.url}`);
       emitStatus({ note: "Túnel público activo" });
@@ -410,6 +416,7 @@ function start() {
       });
     } catch (e) {
       console.error("Failed to open public tunnel:", e.message);
+      emitStatus({ note: "No se pudo abrir túnel público" });
     }
   });
 }
