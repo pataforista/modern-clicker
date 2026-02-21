@@ -17,7 +17,11 @@ import {
   XCircle,
   Info,
   X,
-  AlertTriangle
+  AlertTriangle,
+  Trophy,
+  TimerReset,
+  Sparkles,
+  Flame
 } from 'lucide-react';
 import { QuizProvider, useQuiz } from './context/QuizContext';
 import QuizManager from './components/QuizManager';
@@ -63,6 +67,9 @@ function Dashboard() {
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [pendingIds, setPendingIds] = useState([]);
   const [isMobileView, setIsMobileView] = useState(window.location.hash === '#/vote' || window.location.pathname === '/vote');
+  const [selectedDuration, setSelectedDuration] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
   const mobileVoteUrl = `${serialStatus.tunnelUrl || window.location.origin}/vote`;
 
   useEffect(() => {
@@ -70,6 +77,22 @@ function Dashboard() {
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
+
+  useEffect(() => {
+    if (!isTimerRunning) return undefined;
+
+    const timer = window.setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          setIsTimerRunning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [isTimerRunning]);
 
   const {
     presentationMode,
@@ -256,6 +279,18 @@ function Dashboard() {
 
   const totalVotes = Object.keys(votes).length;
   const isSessionRunning = sessionStatus.status === 'RUNNING';
+  const topOption = [...data].sort((a, b) => b.count - a.count)[0];
+  const timerProgress = selectedDuration > 0 ? Math.round((timeLeft / selectedDuration) * 100) : 0;
+
+  const startRoundTimer = () => {
+    setTimeLeft(selectedDuration);
+    setIsTimerRunning(true);
+  };
+
+  const resetRoundTimer = () => {
+    setIsTimerRunning(false);
+    setTimeLeft(selectedDuration);
+  };
 
   if (isMobileView) {
     return <MobileVote />;
@@ -345,6 +380,42 @@ function Dashboard() {
             </div>
             <div className="vote-count">{totalVotes} votos</div>
           </div>
+
+          <div className="interaction-topbar">
+            <div className="winner-chip">
+              <Trophy size={16} />
+              <span>
+                Top ahora: <strong>{topOption?.name ?? '—'}</strong> ({topOption?.count ?? 0})
+              </span>
+            </div>
+            <div className="engagement-chip">
+              <Flame size={16} />
+              <span>Participación {responseSummary.rate}%</span>
+            </div>
+            <div className="timer-chip">
+              <Sparkles size={16} />
+              <span>{isTimerRunning ? `Tiempo: ${timeLeft}s` : 'Ronda lista'}</span>
+            </div>
+          </div>
+
+          <div className="answer-tiles">
+            {data.map((item, index) => {
+              const percentage = totalVotes ? Math.round((item.count / totalVotes) * 100) : 0;
+              return (
+                <article key={item.name} className="answer-tile" style={{ '--tile-color': BAR_COLORS[index] }}>
+                  <div className="tile-head">
+                    <span className="tile-label">{item.name}</span>
+                    <strong>{item.count}</strong>
+                  </div>
+                  <div className="tile-meter">
+                    <div className="tile-meter-fill" style={{ width: `${percentage}%` }} />
+                  </div>
+                  <small>{percentage}% del total</small>
+                </article>
+              );
+            })}
+          </div>
+
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data}>
@@ -361,6 +432,34 @@ function Dashboard() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+          </div>
+
+          <div className="round-controls">
+            <div className="duration-group">
+              {[30, 60, 120].map((seconds) => (
+                <button
+                  key={seconds}
+                  className={`chip-btn ${selectedDuration === seconds ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedDuration(seconds);
+                    if (!isTimerRunning) setTimeLeft(seconds);
+                  }}
+                >
+                  {seconds}s
+                </button>
+              ))}
+            </div>
+            <div className="round-timer-actions">
+              <button className="btn btn-secondary btn-sm" onClick={startRoundTimer}>
+                <Play size={14} /> Iniciar ronda
+              </button>
+              <button className="btn btn-secondary btn-sm" onClick={resetRoundTimer}>
+                <TimerReset size={14} /> Reiniciar
+              </button>
+            </div>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: `${timerProgress}%` }} />
+            </div>
           </div>
         </section>
 
