@@ -444,6 +444,120 @@ body {
   min-height: 0;
 }
 
+
+.interaction-topbar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 0.9rem;
+}
+
+.winner-chip,
+.engagement-chip,
+.timer-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(176, 199, 255, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+  color: #dbe8ff;
+  font-size: 0.85rem;
+}
+
+.answer-tiles {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
+}
+
+.answer-tile {
+  background: rgba(7, 12, 25, 0.75);
+  border: 1px solid color-mix(in srgb, var(--tile-color) 45%, rgba(255, 255, 255, 0.2));
+  border-radius: 0.75rem;
+  padding: 0.55rem;
+}
+
+.tile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.tile-label {
+  font-weight: 700;
+  color: var(--tile-color);
+}
+
+.tile-meter {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.tile-meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tile-color);
+}
+
+.answer-tile small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.round-controls {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.duration-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chip-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(176, 199, 255, 0.25);
+  color: #dce7ff;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+
+.chip-btn.active {
+  background: rgba(95, 140, 255, 0.22);
+  border-color: rgba(130, 167, 255, 0.7);
+}
+
+.round-timer-actions {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #67d6ff, #5f8cff);
+  transition: width 0.3s ease;
+}
+
 /* Controls */
 .button-group {
   display: flex;
@@ -1962,5 +2076,21 @@ body {
 
   .brand-subtitle {
     display: none;
+  }
+}
+
+@media (max-width: 1300px) {
+  .answer-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .interaction-topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .answer-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
