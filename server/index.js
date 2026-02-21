@@ -64,6 +64,8 @@ let sessionState = {
   participants: {}, // id -> {id, name, number}
   questions: []    // list of {id, text, options, correctAnswer}
 };
+const recentMobileVoteIds = new Set();
+const MAX_RECENT_MOBILE_VOTES = 2000;
 
 // --- Helpers ---
 
@@ -143,8 +145,12 @@ app.post("/session/test", (req, res) => {
 });
 
 app.post("/vote/mobile", (req, res) => {
-  const { id, key, name } = req.body;
+  const { id, key, name, voteId } = req.body;
   if (!id || !key) return res.status(400).json({ error: "Missing id or key" });
+
+  if (voteId && recentMobileVoteIds.has(voteId)) {
+    return res.json({ ok: true, deduped: true });
+  }
 
   // If a name is provided, automatically add to participants list if not exists
   if (name && !sessionState.participants[id]) {
@@ -163,6 +169,15 @@ app.post("/vote/mobile", (req, res) => {
   }
 
   acceptVote(vote);
+
+  if (voteId) {
+    recentMobileVoteIds.add(voteId);
+    if (recentMobileVoteIds.size > MAX_RECENT_MOBILE_VOTES) {
+      const first = recentMobileVoteIds.values().next().value;
+      if (first) recentMobileVoteIds.delete(first);
+    }
+  }
+
   res.json({ ok: true });
 });
 

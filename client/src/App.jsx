@@ -16,7 +16,8 @@ import {
   FileText,
   XCircle,
   Info,
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { QuizProvider, useQuiz } from './context/QuizContext';
 import QuizManager from './components/QuizManager';
@@ -62,6 +63,7 @@ function Dashboard() {
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [pendingIds, setPendingIds] = useState([]);
   const [isMobileView, setIsMobileView] = useState(window.location.hash === '#/vote' || window.location.pathname === '/vote');
+  const mobileVoteUrl = `${serialStatus.tunnelUrl || window.location.origin}/vote`;
 
   useEffect(() => {
     const handleHash = () => setIsMobileView(window.location.hash === '#/vote');
@@ -454,15 +456,15 @@ function Dashboard() {
             <div className="qr-content">
               <div className="qr-box">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent((serialStatus.tunnelUrl || window.location.origin) + '#/vote')}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(mobileVoteUrl)}`}
                   alt="QR Code"
                 />
               </div>
               <div className="qr-instructions">
                 <h3>Escanea para votar desde internet</h3>
-                <p>Usa tus datos móviles o cualquier red para entrar a la sesión.</p>
+                <p>Prioriza este QR para conexión rápida. Si la señal es mala, comparte el enlace corto de abajo.</p>
                 <div className="url-copy">
-                  <code>{(serialStatus.tunnelUrl || window.location.origin)}/#/vote</code>
+                  <code>{mobileVoteUrl}</code>
                 </div>
 
                 {(window.location.hostname === 'localhost' && !serialStatus.tunnelUrl) && (
