@@ -95,6 +95,18 @@ body {
   gap: 0.75rem;
 }
 
+
+.header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .quiz-manager {
   margin-top: 1.5rem;
   gap: 1rem;
@@ -397,6 +409,20 @@ body {
 
   .app-header {
     padding: 0 1rem;
+    height: auto;
+    min-height: var(--header-height);
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+  }
+
+  .answer-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .interaction-topbar {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -893,6 +919,21 @@ body {
 .response-card,
 .quick-guide-card {
   backdrop-filter: blur(8px);
+}
+
+@media (max-width: 640px) {
+  .answer-tiles {
+    grid-template-columns: 1fr;
+  }
+
+  .duration-group,
+  .round-timer-actions {
+    flex-wrap: wrap;
+  }
+
+  .vote-count {
+    font-size: 1.7rem;
+  }
 }
 
 ::-webkit-scrollbar {
